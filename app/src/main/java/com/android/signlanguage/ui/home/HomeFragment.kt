@@ -1,9 +1,12 @@
 package com.android.signlanguage.ui.home
 
+import android.content.res.AssetManager
 import android.graphics.SurfaceTexture
 import android.os.Bundle
+import android.util.Log
 import android.util.Size
 import android.view.*
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.android.signlanguage.R
@@ -12,8 +15,22 @@ import com.google.mediapipe.components.CameraXPreviewHelper
 import com.google.mediapipe.components.ExternalTextureConverter
 import com.google.mediapipe.components.FrameProcessor
 import com.google.mediapipe.components.PermissionHelper
-import com.google.mediapipe.framework.*
+import com.google.mediapipe.formats.proto.LandmarkProto
+import com.google.mediapipe.framework.AndroidAssetUtil
+import com.google.mediapipe.framework.Packet
+import com.google.mediapipe.framework.PacketGetter
 import com.google.mediapipe.glutil.EglManager
+//import org.tensorflow.contrib.android.TensorFlowInferenceInterface
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.Interpreter
+import java.io.FileInputStream
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.io.IOException
+import java.nio.ByteBuffer
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
+import kotlin.math.max
+import kotlin.random.Random
 
 
 class HomeFragment : Fragment() {
@@ -29,8 +46,7 @@ class HomeFragment : Fragment() {
     private val CAMERA_FACING = CameraFacing.FRONT
     private val FLIP_FRAMES_VERTICALLY = true
 
-    init
-    {
+    init {
         System.loadLibrary("mediapipe_jni")
         System.loadLibrary("opencv_java3")
     }
@@ -43,6 +59,28 @@ class HomeFragment : Fragment() {
     private lateinit var cameraHelper: CameraXPreviewHelper
 
     private lateinit var viewGroup: ViewGroup
+    private lateinit var signButton: Button
+
+    private lateinit var interpreter: Interpreter
+
+    @Throws(IOException::class)
+    private fun loadModelFile(assetManager: AssetManager, filename: String): ByteBuffer {
+        val fileDescriptor = assetManager.openFd(filename)
+        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
+        val fileChannel = inputStream.channel
+        val startOffset = fileDescriptor.startOffset
+        val declaredLength = fileDescriptor.declaredLength
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val m = loadModelFile(requireActivity().assets, "model.tflite")
+
+        val options = Interpreter.Options()
+        interpreter = Interpreter(m, options)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,11 +88,12 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         homeViewModel =
-                ViewModelProvider(this).get(HomeViewModel::class.java)
+            ViewModelProvider(this).get(HomeViewModel::class.java)
 
         val root = inflater.inflate(R.layout.fragment_home, container, false)
 
         viewGroup = root.findViewById(R.id.preview_display_layout)
+        signButton = root.findViewById(R.id.sign_button)
 
         previewDisplayView = SurfaceView(context)
         setupPreviewDisplayView()
@@ -78,28 +117,51 @@ class HomeFragment : Fragment() {
         inputSidePackets[INPUT_NUM_HANDS_SIDE_PACKET_NAME] = packetCreator.createInt32(NUM_HANDS)
         processor.setInputSidePackets(inputSidePackets)
 
-//        if (Log.isLoggable(TAG, Log.VERBOSE)) {
-//            processor.addPacketCallback(
-//                OUTPUT_LANDMARKS_STREAM_NAME
-//            ) { packet: Packet ->
-//                Log.v(TAG, "Received multi-hand landmarks packet.")
-//                val multiHandLandmarks =
-//                    PacketGetter.getProtoVector(
-//                        packet,
-//                        NormalizedLandmarkList.parser()
-//                    )
-//                Log.v(
-//                    TAG,
-//                    "[TS:"
-//                            + packet.timestamp
-//                            + "] "
-//                            + getMultiHandLandmarksDebugString(multiHandLandmarks)
-//                )
-//            }
-//        }
+        processor.addPacketCallback(
+            OUTPUT_LANDMARKS_STREAM_NAME
+        ) { packet: Packet ->
+            val multiHandLandmarks =
+                PacketGetter.getProtoVector(
+                    packet,
+                    LandmarkProto.NormalizedLandmarkList.parser()
+                )
+            val handLandmarks = multiHandLandmarks[0]
+            if (signButton.isPressed)
+                letterA.add(handLandmarks)
+
+            val inp = Array(1) { Array(21) { FloatArray(3) } }
+
+            for (i in 0..20) {
+                val lm = handLandmarks.getLandmark(i)
+                inp[0][i][0] = lm.x
+                inp[0][i][1] = lm.y
+                inp[0][i][2] = lm.z
+            }
+
+            val output = Array(1) { FloatArray(5) }
+            interpreter.run(inp, output)
+
+            val s = StringBuilder()
+            var maxIndex = 0
+            for (j in 0..4) {
+                s.append(output[0][j])
+                s.append("  ")
+                if (output[0][j] > output[0][maxIndex])
+                    maxIndex = j
+            }
+            if (output[0][maxIndex] > 0.8f)
+                signButton.text = maxIndex.toString()
+            else
+                signButton.text = "unknown"
+        }
 
 
         return root
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        interpreter.close()
     }
 
     override fun onResume() {
@@ -133,7 +195,7 @@ class HomeFragment : Fragment() {
 
     private fun startCamera() {
         cameraHelper = CameraXPreviewHelper()
-        cameraHelper.setOnCameraStartedListener{ surfaceTexture ->
+        cameraHelper.setOnCameraStartedListener { surfaceTexture ->
             previewFrameTexture = surfaceTexture!!
             previewDisplayView.visibility = View.VISIBLE
         }
@@ -184,5 +246,10 @@ class HomeFragment : Fragment() {
                         processor.videoSurfaceOutput.setSurface(null)
                     }
                 })
+    }
+
+    companion object {
+        public val letterA = ArrayList<LandmarkProto.NormalizedLandmarkList>()
+        public val letterB = ArrayList<LandmarkProto.NormalizedLandmarkList>()
     }
 }
