@@ -3,6 +3,7 @@ package com.android.signlanguage.ui.home
 import android.content.res.AssetManager
 import android.graphics.SurfaceTexture
 import android.os.Bundle
+import android.util.Log
 import android.util.Size
 import android.view.*
 import android.widget.Button
@@ -39,10 +40,6 @@ class HomeFragment : Fragment() {
     private val CAMERA_FACING = CameraFacing.FRONT
     private val FLIP_FRAMES_VERTICALLY = true
 
-    init {
-        System.loadLibrary("mediapipe_jni")
-        System.loadLibrary("opencv_java3")
-    }
 
     private lateinit var previewFrameTexture: SurfaceTexture
     private lateinit var previewDisplayView: SurfaceView
@@ -55,6 +52,16 @@ class HomeFragment : Fragment() {
     private lateinit var signButton: Button
 
     private lateinit var interpreter: Interpreter
+
+    companion object {
+        init {
+            System.loadLibrary("mediapipe_jni")
+            System.loadLibrary("opencv_java3")
+        }
+
+        public val letterA = ArrayList<LandmarkProto.NormalizedLandmarkList>()
+        public val letterB = ArrayList<LandmarkProto.NormalizedLandmarkList>()
+    }
 
     @Throws(IOException::class)
     private fun loadModelFile(assetManager: AssetManager, filename: String): ByteBuffer {
@@ -69,10 +76,27 @@ class HomeFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        PermissionHelper.checkAndRequestCameraPermissions(activity)
+
         val m = loadModelFile(requireActivity().assets, "model.tflite")
 
         val options = Interpreter.Options()
         interpreter = Interpreter(m, options)
+
+        AndroidAssetUtil.initializeNativeAssetManager(context)
+
+        eglManager = EglManager(null)
+        processor = FrameProcessor(
+            context,
+            eglManager.nativeContext,
+            BINARY_GRAPH_NAME,
+            INPUT_VIDEO_STREAM_NAME,
+            OUTPUT_VIDEO_STREAM_NAME
+        )
+        processor
+            .videoSurfaceOutput
+            .setFlipY(FLIP_FRAMES_VERTICALLY)
+
     }
 
     override fun onCreateView(
@@ -91,20 +115,6 @@ class HomeFragment : Fragment() {
         previewDisplayView = SurfaceView(context)
         setupPreviewDisplayView()
 
-        AndroidAssetUtil.initializeNativeAssetManager(context)
-        eglManager = EglManager(null)
-        processor = FrameProcessor(
-            context,
-            eglManager.nativeContext,
-            BINARY_GRAPH_NAME,
-            INPUT_VIDEO_STREAM_NAME,
-            OUTPUT_VIDEO_STREAM_NAME
-        )
-        processor
-            .videoSurfaceOutput
-            .setFlipY(FLIP_FRAMES_VERTICALLY)
-
-        PermissionHelper.checkAndRequestCameraPermissions(activity)
         val packetCreator = processor.packetCreator
         val inputSidePackets: MutableMap<String, Packet> = HashMap()
         inputSidePackets[INPUT_NUM_HANDS_SIDE_PACKET_NAME] = packetCreator.createInt32(NUM_HANDS)
@@ -113,39 +123,43 @@ class HomeFragment : Fragment() {
         processor.addPacketCallback(
             OUTPUT_LANDMARKS_STREAM_NAME
         ) { packet: Packet ->
-            val multiHandLandmarks =
-                PacketGetter.getProtoVector(
-                    packet,
-                    LandmarkProto.NormalizedLandmarkList.parser()
-                )
-            val handLandmarks = multiHandLandmarks[0]
-            if (signButton.isPressed)
-                letterA.add(handLandmarks)
-
-            val inp = Array(1) { Array(21) { FloatArray(3) } }
-
-            for (i in 0..20) {
-                val lm = handLandmarks.getLandmark(i)
-                inp[0][i][0] = lm.x
-                inp[0][i][1] = lm.y
-                inp[0][i][2] = lm.z
-            }
-
-            val output = Array(1) { FloatArray(5) }
-            interpreter.run(inp, output)
-
-            val s = StringBuilder()
-            var maxIndex = 0
-            for (j in 0..4) {
-                s.append(output[0][j])
-                s.append("  ")
-                if (output[0][j] > output[0][maxIndex])
-                    maxIndex = j
-            }
-            signButton.text = ('A' + maxIndex).toString()
+            handsCallback(packet)
         }
 
         return root
+    }
+
+    private fun handsCallback(packet: Packet) {
+        val multiHandLandmarks =
+            PacketGetter.getProtoVector(
+                packet,
+                LandmarkProto.NormalizedLandmarkList.parser()
+            )
+        val handLandmarks = multiHandLandmarks[0]
+        if (signButton.isPressed)
+            letterA.add(handLandmarks)
+
+        val inp = Array(1) { Array(21) { FloatArray(3) } }
+
+        for (i in 0..20) {
+            val lm = handLandmarks.getLandmark(i)
+            inp[0][i][0] = lm.x
+            inp[0][i][1] = lm.y
+            inp[0][i][2] = lm.z
+        }
+
+        val output = Array(1) { FloatArray(5) }
+        interpreter.run(inp, output)
+
+        val s = StringBuilder()
+        var maxIndex = 0
+        for (j in 0..4) {
+            s.append(output[0][j])
+            s.append("  ")
+            if (output[0][j] > output[0][maxIndex])
+                maxIndex = j
+        }
+        signButton.text = ('A' + maxIndex).toString()
     }
 
     override fun onDestroy() {
@@ -235,10 +249,5 @@ class HomeFragment : Fragment() {
                         processor.videoSurfaceOutput.setSurface(null)
                     }
                 })
-    }
-
-    companion object {
-        public val letterA = ArrayList<LandmarkProto.NormalizedLandmarkList>()
-        public val letterB = ArrayList<LandmarkProto.NormalizedLandmarkList>()
     }
 }
