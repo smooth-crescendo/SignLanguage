@@ -3,7 +3,6 @@ package com.android.signlanguage.ui.home
 import android.content.res.AssetManager
 import android.graphics.SurfaceTexture
 import android.os.Bundle
-import android.util.Log
 import android.util.Size
 import android.view.*
 import android.widget.Button
@@ -20,17 +19,11 @@ import com.google.mediapipe.framework.AndroidAssetUtil
 import com.google.mediapipe.framework.Packet
 import com.google.mediapipe.framework.PacketGetter
 import com.google.mediapipe.glutil.EglManager
-//import org.tensorflow.contrib.android.TensorFlowInferenceInterface
-import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.IOException
 import java.nio.ByteBuffer
-import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import kotlin.math.max
-import kotlin.random.Random
 
 
 class HomeFragment : Fragment() {
@@ -149,12 +142,8 @@ class HomeFragment : Fragment() {
                 if (output[0][j] > output[0][maxIndex])
                     maxIndex = j
             }
-            if (output[0][maxIndex] > 0.8f)
-                signButton.text = maxIndex.toString()
-            else
-                signButton.text = "unknown"
+            signButton.text = ('A' + maxIndex).toString()
         }
-
 
         return root
     }
