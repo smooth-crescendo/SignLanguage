@@ -7,14 +7,12 @@ import android.util.Log
 import android.util.Size
 import android.view.*
 import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.android.signlanguage.R
+import com.google.mediapipe.components.*
 import com.google.mediapipe.components.CameraHelper.CameraFacing
-import com.google.mediapipe.components.CameraXPreviewHelper
-import com.google.mediapipe.components.ExternalTextureConverter
-import com.google.mediapipe.components.FrameProcessor
-import com.google.mediapipe.components.PermissionHelper
 import com.google.mediapipe.formats.proto.LandmarkProto
 import com.google.mediapipe.framework.AndroidAssetUtil
 import com.google.mediapipe.framework.Packet
@@ -50,6 +48,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var viewGroup: ViewGroup
     private lateinit var signButton: Button
+    private lateinit var signText: TextView
 
     private lateinit var interpreter: Interpreter
 
@@ -59,8 +58,7 @@ class HomeFragment : Fragment() {
             System.loadLibrary("opencv_java3")
         }
 
-        public val letterA = ArrayList<LandmarkProto.NormalizedLandmarkList>()
-        public val letterB = ArrayList<LandmarkProto.NormalizedLandmarkList>()
+        val letter = ArrayList<LandmarkProto.NormalizedLandmarkList>()
     }
 
     @Throws(IOException::class)
@@ -73,15 +71,27 @@ class HomeFragment : Fragment() {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        homeViewModel =
+            ViewModelProvider(this).get(HomeViewModel::class.java)
 
-        PermissionHelper.checkAndRequestCameraPermissions(activity)
+        val root = inflater.inflate(R.layout.fragment_home, container, false)
+
+        viewGroup = root.findViewById(R.id.preview_display_layout)
+        signButton = root.findViewById(R.id.sign_button)
+        signText = root.findViewById(R.id.sign_text)
 
         val m = loadModelFile(requireActivity().assets, "model.tflite")
 
         val options = Interpreter.Options()
         interpreter = Interpreter(m, options)
+
+        previewDisplayView = SurfaceView(context)
+        setupPreviewDisplayView()
 
         AndroidAssetUtil.initializeNativeAssetManager(context)
 
@@ -97,23 +107,7 @@ class HomeFragment : Fragment() {
             .videoSurfaceOutput
             .setFlipY(FLIP_FRAMES_VERTICALLY)
 
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
-
-        val root = inflater.inflate(R.layout.fragment_home, container, false)
-
-        viewGroup = root.findViewById(R.id.preview_display_layout)
-        signButton = root.findViewById(R.id.sign_button)
-
-        previewDisplayView = SurfaceView(context)
-        setupPreviewDisplayView()
+        PermissionHelper.checkAndRequestCameraPermissions(activity)
 
         val packetCreator = processor.packetCreator
         val inputSidePackets: MutableMap<String, Packet> = HashMap()
@@ -137,9 +131,10 @@ class HomeFragment : Fragment() {
             )
         val handLandmarks = multiHandLandmarks[0]
         if (signButton.isPressed)
-            letterA.add(handLandmarks)
+            letter.add(handLandmarks)
 
-        val inp = Array(1) { Array(21) { FloatArray(3) } }
+
+        var inp = Array(1) { Array(21) { FloatArray(3) } }
 
         for (i in 0..20) {
             val lm = handLandmarks.getLandmark(i)
@@ -147,6 +142,10 @@ class HomeFragment : Fragment() {
             inp[0][i][1] = lm.y
             inp[0][i][2] = lm.z
         }
+
+        alignAxisLandmarks(inp, 0)
+        alignAxisLandmarks(inp, 1)
+        alignAxisLandmarks(inp, 2)
 
         val output = Array(1) { FloatArray(5) }
         interpreter.run(inp, output)
@@ -159,7 +158,21 @@ class HomeFragment : Fragment() {
             if (output[0][j] > output[0][maxIndex])
                 maxIndex = j
         }
-        signButton.text = ('A' + maxIndex).toString()
+        Log.d("HomeFragment", s.toString())
+        signText.text = ('A' + maxIndex + letter.size.toString())
+    }
+
+    private fun alignAxisLandmarks(src: Array<Array<FloatArray>>, ax: Int) {
+        var min = 100f
+        for (i in 0..20) {
+            val v = src[0][i][ax]
+            if (v < min) {
+                min = v
+            }
+        }
+        for (i in 0..20) {
+            src[0][i][ax] -= min
+        }
     }
 
     override fun onDestroy() {
@@ -192,6 +205,11 @@ class HomeFragment : Fragment() {
         PermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
+    private fun onCameraStarted(surfaceTexture: SurfaceTexture) {
+        previewFrameTexture = surfaceTexture
+        previewDisplayView.visibility = View.VISIBLE
+    }
+
     private fun cameraTargetResolution(): Size? {
         return null
     }
@@ -199,8 +217,7 @@ class HomeFragment : Fragment() {
     private fun startCamera() {
         cameraHelper = CameraXPreviewHelper()
         cameraHelper.setOnCameraStartedListener { surfaceTexture ->
-            previewFrameTexture = surfaceTexture!!
-            previewDisplayView.visibility = View.VISIBLE
+            onCameraStarted(surfaceTexture!!)
         }
         val cameraFacing = CameraFacing.FRONT
         cameraHelper.startCamera(
@@ -213,7 +230,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun onPreviewDisplaySurfaceChanged(
-        width: Int, height: Int
+        holder: SurfaceHolder, width: Int, height: Int
     ) {
         val viewSize = computeViewSize(width, height)
         val displaySize = cameraHelper.computeDisplaySizeFromViewSize(viewSize)
@@ -242,7 +259,7 @@ class HomeFragment : Fragment() {
                         width: Int,
                         height: Int
                     ) {
-                        onPreviewDisplaySurfaceChanged(width, height)
+                        onPreviewDisplaySurfaceChanged(holder, width, height)
                     }
 
                     override fun surfaceDestroyed(holder: SurfaceHolder) {
@@ -251,3 +268,5 @@ class HomeFragment : Fragment() {
                 })
     }
 }
+
+fun Float.format(digits: Int) = "%.${digits}f".format(this)
