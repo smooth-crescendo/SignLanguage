@@ -1,5 +1,6 @@
 package com.android.signlanguage.ui.home
 
+import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.SurfaceTexture
 import android.os.Bundle
@@ -61,21 +62,12 @@ class HomeFragment : Fragment() {
         val letter = ArrayList<LandmarkProto.NormalizedLandmarkList>()
     }
 
-    @Throws(IOException::class)
-    private fun loadModelFile(assetManager: AssetManager, filename: String): ByteBuffer {
-        val fileDescriptor = assetManager.openFd(filename)
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d("HomeFragment" + this.hashCode(), "onCreateView")
         homeViewModel =
             ViewModelProvider(this).get(HomeViewModel::class.java)
 
@@ -175,71 +167,51 @@ class HomeFragment : Fragment() {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("HomeFragment" + this.hashCode(), "onCreate")
+        super.onCreate(savedInstanceState)
+    }
+
     override fun onDestroy() {
+        Log.d("HomeFragment" + this.hashCode(), "onDestroy")
         super.onDestroy()
         interpreter.close()
     }
 
+    override fun onDestroyView() {
+        Log.d("HomeFragment" + this.hashCode(), "onDestroyView")
+        super.onDestroyView()
+    }
+
     override fun onResume() {
+        Log.d("HomeFragment" + this.hashCode(), "onResume")
         super.onResume()
+
         converter = ExternalTextureConverter(
             eglManager.context, 2
         )
         converter.setFlipY(FLIP_FRAMES_VERTICALLY)
         converter.setConsumer(processor)
+
         if (PermissionHelper.cameraPermissionsGranted(activity)) {
-            startCamera()
+            cameraHelper = CameraXPreviewHelper()
+            cameraHelper.setOnCameraStartedListener { surfaceTexture ->
+                Log.d("HomeFragment", "camera started")
+                previewFrameTexture = surfaceTexture!!
+                previewDisplayView.visibility = View.VISIBLE
+            }
+            val cameraFacing = CameraFacing.FRONT
+            cameraHelper.startCamera(
+                activity, cameraFacing, null, null
+            )
         }
     }
 
     override fun onPause() {
+        Log.d("HomeFragment" + this.hashCode(), "onPause")
         super.onPause()
         converter.close()
         previewDisplayView.visibility = View.GONE
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String?>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        PermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    private fun onCameraStarted(surfaceTexture: SurfaceTexture) {
-        previewFrameTexture = surfaceTexture
-        previewDisplayView.visibility = View.VISIBLE
-    }
-
-    private fun cameraTargetResolution(): Size? {
-        return null
-    }
-
-    private fun startCamera() {
-        cameraHelper = CameraXPreviewHelper()
-        cameraHelper.setOnCameraStartedListener { surfaceTexture ->
-            onCameraStarted(surfaceTexture!!)
-        }
-        val cameraFacing = CameraFacing.FRONT
-        cameraHelper.startCamera(
-            activity, cameraFacing, null, cameraTargetResolution()
-        )
-    }
-
-    private fun computeViewSize(width: Int, height: Int): Size {
-        return Size(width, height)
-    }
-
-    private fun onPreviewDisplaySurfaceChanged(
-        holder: SurfaceHolder, width: Int, height: Int
-    ) {
-        val viewSize = computeViewSize(width, height)
-        val displaySize = cameraHelper.computeDisplaySizeFromViewSize(viewSize)
-        val isCameraRotated = cameraHelper.isCameraRotated
-        converter.setSurfaceTextureAndAttachToGLContext(
-            previewFrameTexture,
-            if (isCameraRotated) displaySize.height else displaySize.width,
-            if (isCameraRotated) displaySize.width else displaySize.height
-        )
     }
 
     private fun setupPreviewDisplayView() {
@@ -250,6 +222,8 @@ class HomeFragment : Fragment() {
             .addCallback(
                 object : SurfaceHolder.Callback {
                     override fun surfaceCreated(holder: SurfaceHolder) {
+                        Log.d("HomeFragment", "surface created")
+
                         processor.videoSurfaceOutput.setSurface(holder.surface)
                     }
 
@@ -259,13 +233,40 @@ class HomeFragment : Fragment() {
                         width: Int,
                         height: Int
                     ) {
-                        onPreviewDisplaySurfaceChanged(holder, width, height)
+                        Log.d("HomeFragment", "surface changed")
+                        val viewSize = Size(width, height)
+                        val displaySize = cameraHelper.computeDisplaySizeFromViewSize(viewSize)
+                        val isCameraRotated = cameraHelper.isCameraRotated
+                        converter.setSurfaceTextureAndAttachToGLContext(
+                            previewFrameTexture,
+                            if (isCameraRotated) displaySize.height else displaySize.width,
+                            if (isCameraRotated) displaySize.width else displaySize.height
+                        )
+                        previewFrameTexture.updateTexImage()
                     }
 
                     override fun surfaceDestroyed(holder: SurfaceHolder) {
+                        Log.d("HomeFragment", "surface destroyed")
                         processor.videoSurfaceOutput.setSurface(null)
                     }
                 })
+    }
+
+    @Throws(IOException::class)
+    private fun loadModelFile(assetManager: AssetManager, filename: String): ByteBuffer {
+        val fileDescriptor = assetManager.openFd(filename)
+        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
+        val fileChannel = inputStream.channel
+        val startOffset = fileDescriptor.startOffset
+        val declaredLength = fileDescriptor.declaredLength
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String?>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        PermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }
 
