@@ -10,6 +10,8 @@ import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import com.android.signlanguage.R
 import com.google.mediapipe.components.*
@@ -19,6 +21,9 @@ import com.google.mediapipe.framework.AndroidAssetUtil
 import com.google.mediapipe.framework.Packet
 import com.google.mediapipe.framework.PacketGetter
 import com.google.mediapipe.glutil.EglManager
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.io.IOException
@@ -150,7 +155,7 @@ class HomeFragment : Fragment() {
             if (output[0][j] > output[0][maxIndex])
                 maxIndex = j
         }
-        Log.d("HomeFragment", s.toString())
+//        Log.d("HomeFragment", s.toString())
         signText.text = ('A' + maxIndex + letter.size.toString())
     }
 
@@ -197,6 +202,10 @@ class HomeFragment : Fragment() {
             cameraHelper = CameraXPreviewHelper()
             cameraHelper.setOnCameraStartedListener { surfaceTexture ->
                 Log.d("HomeFragment", "camera started")
+                surfaceTexture?.setOnFrameAvailableListener {
+                    Log.e("HomeFragment", "Frame available")
+//                    isReady.postValue(true)
+                }
                 previewFrameTexture = surfaceTexture!!
                 previewDisplayView.visibility = View.VISIBLE
             }
@@ -242,7 +251,11 @@ class HomeFragment : Fragment() {
                             if (isCameraRotated) displaySize.height else displaySize.width,
                             if (isCameraRotated) displaySize.width else displaySize.height
                         )
-                        previewFrameTexture.updateTexImage()
+                        try {
+                            previewFrameTexture.updateTexImage()
+                        } catch (exception: Exception) {
+                            Log.d("HomeFragment", exception.message.orEmpty())
+                        }
                     }
 
                     override fun surfaceDestroyed(holder: SurfaceHolder) {
