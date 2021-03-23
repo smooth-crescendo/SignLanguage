@@ -1,6 +1,5 @@
 package com.android.signlanguage.ui.home
 
-import android.content.res.AssetManager
 import android.graphics.SurfaceTexture
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import com.android.signlanguage.R
+import com.android.signlanguage.SignModelLoader
 import com.google.mediapipe.components.*
 import com.google.mediapipe.components.CameraHelper.CameraFacing
 import com.google.mediapipe.formats.proto.LandmarkProto
@@ -22,10 +22,6 @@ import com.google.mediapipe.framework.Packet
 import com.google.mediapipe.framework.PacketGetter
 import com.google.mediapipe.glutil.EglManager
 import org.tensorflow.lite.Interpreter
-import java.io.FileInputStream
-import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.channels.FileChannel
 
 
 class HomeFragment : Fragment() {
@@ -57,7 +53,7 @@ class HomeFragment : Fragment() {
 
     private var isCameraLoaded = MutableLiveData(false)
 
-    private lateinit var interpreter: Interpreter
+    private lateinit var signModel: Interpreter
 
     companion object {
         init {
@@ -89,10 +85,7 @@ class HomeFragment : Fragment() {
         loadingCameraProgressBar = root.findViewById(R.id.loading_camera_progress_bar)
         letterImage = root.findViewById(R.id.letter_image)
 
-        val m = loadModelFile(requireActivity().assets, "model.tflite")
-
-        val options = Interpreter.Options()
-        interpreter = Interpreter(m, options)
+        signModel = SignModelLoader().load(requireActivity().assets, "model.tflite")
 
         previewDisplayView = SurfaceView(context)
         setupPreviewDisplayView()
@@ -166,7 +159,7 @@ class HomeFragment : Fragment() {
         alignAxisLandmarks(input, 2)
 
         val output = Array(1) { FloatArray(5) }
-        interpreter.run(input, output)
+        signModel.run(input, output)
 
         val signTextStringBuilder = StringBuilder()
         var predictedSignIndex = 0
@@ -230,7 +223,7 @@ class HomeFragment : Fragment() {
     override fun onDestroy() {
         Log.d("HomeFragment" + this.hashCode(), "onDestroy")
         super.onDestroy()
-        interpreter.close()
+        signModel.close()
     }
 
     private fun setupPreviewDisplayView() {
@@ -274,16 +267,6 @@ class HomeFragment : Fragment() {
                         processor.videoSurfaceOutput.setSurface(null)
                     }
                 })
-    }
-
-    @Throws(IOException::class)
-    private fun loadModelFile(assetManager: AssetManager, filename: String): ByteBuffer {
-        val fileDescriptor = assetManager.openFd(filename)
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
     override fun onRequestPermissionsResult(
