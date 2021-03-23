@@ -1,5 +1,6 @@
 package com.android.signlanguage.ui.home
 
+import android.media.Image
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -9,12 +10,15 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.android.signlanguage.HandTrackingModel
 import com.android.signlanguage.R
 import com.android.signlanguage.SignModelLoader
 import com.google.mediapipe.components.*
 import com.google.mediapipe.framework.AndroidAssetUtil
+import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
+import java.util.*
 
 
 class HomeFragment : Fragment() {
@@ -34,6 +38,14 @@ class HomeFragment : Fragment() {
     private var handTrackingModel = HandTrackingModel()
 
     private lateinit var signModel: Interpreter
+
+    private val signsDictionary = mapOf<Char, Int>(
+        Pair('a', R.drawable.letter_a),
+        Pair('b', R.drawable.letter_b),
+        Pair('c', R.drawable.letter_c),
+        Pair('d', R.drawable.letter_d),
+        Pair('e', R.drawable.letter_e),
+    )
 
     companion object {
         init {
@@ -105,6 +117,10 @@ class HomeFragment : Fragment() {
                 predictedSignIndex = j
         }
         signText.text = ('A' + predictedSignIndex).toString()
+
+        lifecycleScope.launch {
+            letterImage.setImageResource(signsDictionary['a' + predictedSignIndex]!!)
+        }
     }
 
     override fun onResume() {
