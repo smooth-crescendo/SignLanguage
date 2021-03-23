@@ -1,6 +1,5 @@
 package com.android.signlanguage.ui.home
 
-import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.SurfaceTexture
 import android.os.Bundle
@@ -8,9 +7,10 @@ import android.util.Log
 import android.util.Size
 import android.view.*
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import com.android.signlanguage.R
@@ -21,9 +21,6 @@ import com.google.mediapipe.framework.AndroidAssetUtil
 import com.google.mediapipe.framework.Packet
 import com.google.mediapipe.framework.PacketGetter
 import com.google.mediapipe.glutil.EglManager
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.io.IOException
@@ -44,7 +41,6 @@ class HomeFragment : Fragment() {
     private val CAMERA_FACING = CameraFacing.FRONT
     private val FLIP_FRAMES_VERTICALLY = true
 
-
     private lateinit var previewFrameTexture: SurfaceTexture
     private lateinit var previewDisplayView: SurfaceView
     private lateinit var eglManager: EglManager
@@ -55,6 +51,11 @@ class HomeFragment : Fragment() {
     private lateinit var viewGroup: ViewGroup
     private lateinit var signButton: Button
     private lateinit var signText: TextView
+    private lateinit var noCameraAccessView: TextView
+    private lateinit var loadingCameraProgressBar: ProgressBar
+    private lateinit var letterImage: ImageView
+
+    private var isCameraLoaded = MutableLiveData(false)
 
     private lateinit var interpreter: Interpreter
 
@@ -63,8 +64,11 @@ class HomeFragment : Fragment() {
             System.loadLibrary("mediapipe_jni")
             System.loadLibrary("opencv_java3")
         }
+    }
 
-        val letter = ArrayList<LandmarkProto.NormalizedLandmarkList>()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("HomeFragment" + this.hashCode(), "onCreate")
+        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -81,6 +85,9 @@ class HomeFragment : Fragment() {
         viewGroup = root.findViewById(R.id.preview_display_layout)
         signButton = root.findViewById(R.id.sign_button)
         signText = root.findViewById(R.id.sign_text)
+        noCameraAccessView = root.findViewById(R.id.no_camera_access_view)
+        loadingCameraProgressBar = root.findViewById(R.id.loading_camera_progress_bar)
+        letterImage = root.findViewById(R.id.letter_image)
 
         val m = loadModelFile(requireActivity().assets, "model.tflite")
 
@@ -104,7 +111,24 @@ class HomeFragment : Fragment() {
             .videoSurfaceOutput
             .setFlipY(FLIP_FRAMES_VERTICALLY)
 
+        processor.setOnWillAddFrameListener {
+            if (isCameraLoaded.value == false)
+                isCameraLoaded.postValue(true)
+        }
+
+        isCameraLoaded.observe(viewLifecycleOwner) {
+            if (it == true) {
+                loadingCameraProgressBar.visibility = View.GONE
+                letterImage.visibility = View.VISIBLE
+            }
+        }
+
         PermissionHelper.checkAndRequestCameraPermissions(activity)
+        if (PermissionHelper.cameraPermissionsGranted(activity)) {
+            noCameraAccessView.visibility = View.GONE
+            loadingCameraProgressBar.visibility = View.VISIBLE
+
+        }
 
         val packetCreator = processor.packetCreator
         val inputSidePackets: MutableMap<String, Packet> = HashMap()
@@ -127,36 +151,32 @@ class HomeFragment : Fragment() {
                 LandmarkProto.NormalizedLandmarkList.parser()
             )
         val handLandmarks = multiHandLandmarks[0]
-        if (signButton.isPressed)
-            letter.add(handLandmarks)
 
-
-        var inp = Array(1) { Array(21) { FloatArray(3) } }
+        val input = Array(1) { Array(21) { FloatArray(3) } }
 
         for (i in 0..20) {
             val lm = handLandmarks.getLandmark(i)
-            inp[0][i][0] = lm.x
-            inp[0][i][1] = lm.y
-            inp[0][i][2] = lm.z
+            input[0][i][0] = lm.x
+            input[0][i][1] = lm.y
+            input[0][i][2] = lm.z
         }
 
-        alignAxisLandmarks(inp, 0)
-        alignAxisLandmarks(inp, 1)
-        alignAxisLandmarks(inp, 2)
+        alignAxisLandmarks(input, 0)
+        alignAxisLandmarks(input, 1)
+        alignAxisLandmarks(input, 2)
 
         val output = Array(1) { FloatArray(5) }
-        interpreter.run(inp, output)
+        interpreter.run(input, output)
 
-        val s = StringBuilder()
-        var maxIndex = 0
+        val signTextStringBuilder = StringBuilder()
+        var predictedSignIndex = 0
         for (j in 0..4) {
-            s.append(output[0][j])
-            s.append("  ")
-            if (output[0][j] > output[0][maxIndex])
-                maxIndex = j
+            signTextStringBuilder.append(output[0][j])
+            signTextStringBuilder.append("  ")
+            if (output[0][j] > output[0][predictedSignIndex])
+                predictedSignIndex = j
         }
-//        Log.d("HomeFragment", s.toString())
-        signText.text = ('A' + maxIndex + letter.size.toString())
+        signText.text = ('A' + predictedSignIndex).toString()
     }
 
     private fun alignAxisLandmarks(src: Array<Array<FloatArray>>, ax: Int) {
@@ -170,22 +190,6 @@ class HomeFragment : Fragment() {
         for (i in 0..20) {
             src[0][i][ax] -= min
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d("HomeFragment" + this.hashCode(), "onCreate")
-        super.onCreate(savedInstanceState)
-    }
-
-    override fun onDestroy() {
-        Log.d("HomeFragment" + this.hashCode(), "onDestroy")
-        super.onDestroy()
-        interpreter.close()
-    }
-
-    override fun onDestroyView() {
-        Log.d("HomeFragment" + this.hashCode(), "onDestroyView")
-        super.onDestroyView()
     }
 
     override fun onResume() {
@@ -202,16 +206,11 @@ class HomeFragment : Fragment() {
             cameraHelper = CameraXPreviewHelper()
             cameraHelper.setOnCameraStartedListener { surfaceTexture ->
                 Log.d("HomeFragment", "camera started")
-                surfaceTexture?.setOnFrameAvailableListener {
-                    Log.e("HomeFragment", "Frame available")
-//                    isReady.postValue(true)
-                }
                 previewFrameTexture = surfaceTexture!!
                 previewDisplayView.visibility = View.VISIBLE
             }
-            val cameraFacing = CameraFacing.FRONT
             cameraHelper.startCamera(
-                activity, cameraFacing, null, null
+                activity, CAMERA_FACING, null, null
             )
         }
     }
@@ -223,8 +222,20 @@ class HomeFragment : Fragment() {
         previewDisplayView.visibility = View.GONE
     }
 
+    override fun onDestroyView() {
+        Log.d("HomeFragment" + this.hashCode(), "onDestroyView")
+        super.onDestroyView()
+    }
+
+    override fun onDestroy() {
+        Log.d("HomeFragment" + this.hashCode(), "onDestroy")
+        super.onDestroy()
+        interpreter.close()
+    }
+
     private fun setupPreviewDisplayView() {
         previewDisplayView.visibility = View.GONE
+        previewDisplayView.alpha = 0f
         viewGroup.addView(previewDisplayView)
         previewDisplayView
             .holder
@@ -282,5 +293,3 @@ class HomeFragment : Fragment() {
         PermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }
-
-fun Float.format(digits: Int) = "%.${digits}f".format(this)
