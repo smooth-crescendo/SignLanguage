@@ -137,6 +137,7 @@ class HandTrackingModel {
 
     fun close() {
         converter.close()
+        previewDisplayView.visibility = View.GONE
     }
 
     private fun handsCallback(packet: Packet) {

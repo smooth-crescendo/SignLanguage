@@ -122,7 +122,6 @@ class HomeFragment : Fragment() {
         Log.d(TAG + this.hashCode(), "onPause")
         super.onPause()
         handTrackingModel.close()
-        previewDisplayView.visibility = View.GONE
     }
 
     override fun onDestroyView() {
