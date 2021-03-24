@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment">
+    tools:context=".ui.lesson.LessonFragment"
+    android:background="?attr/colorSurface">
 
     <FrameLayout
         android:id="@+id/preview_display_layout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/sign_text"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -37,28 +38,21 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="No camera access" />
+
+        <View
+            android:layout_height="match_parent"
+            android:layout_width="match_parent">
+        </View>
     </FrameLayout>
 
     <TextView
-        android:id="@+id/sign_text"
-        android:layout_width="0dp"
+        android:layout_marginTop="150dp"
+        android:text="You are showing:"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textSize="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/sign_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/preview_display_layout">
-
-    </TextView>
-
-    <Button
-        android:id="@+id/sign_button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Capture"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sign_text"/>
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,7 +6,7 @@ import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 
-class SignModelLoader {
+class SignDetectionModelLoader {
     fun load(assetManager: AssetManager, filename: String): Interpreter {
         val model = loadModelFile(assetManager, filename)
 

@@ -55,7 +55,6 @@ class HandTrackingModel {
     fun setupPreviewDisplayView(pdv: SurfaceView) {
         previewDisplayView = pdv
         previewDisplayView.visibility = View.GONE
-        previewDisplayView.alpha = 0f
         previewDisplayView
             .holder
             .addCallback(
