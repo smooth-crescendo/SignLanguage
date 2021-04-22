@@ -21,48 +21,50 @@ import com.google.mediapipe.glutil.EglManager
 
 class HandTrackingModel {
 
-    private val TAG = "HandTrackingModel"
+    companion object {
+        private const val TAG = "HandTrackingModel"
 
-    private val BINARY_GRAPH_NAME = "hand_tracking_mobile_gpu.binarypb"
-    private val INPUT_VIDEO_STREAM_NAME = "input_video"
-    private val OUTPUT_VIDEO_STREAM_NAME = "output_video"
-    private val OUTPUT_LANDMARKS_STREAM_NAME = "hand_landmarks"
-    private val INPUT_NUM_HANDS_SIDE_PACKET_NAME = "num_hands"
-    private val NUM_HANDS = 1
-    private val CAMERA_FACING = CameraHelper.CameraFacing.FRONT
-    private val FLIP_FRAMES_VERTICALLY = true
+        private const val BINARY_GRAPH_NAME = "hand_tracking_mobile_gpu.binarypb"
+        private const val INPUT_VIDEO_STREAM_NAME = "input_video"
+        private const val OUTPUT_VIDEO_STREAM_NAME = "output_video"
+        private const val OUTPUT_LANDMARKS_STREAM_NAME = "hand_landmarks"
+        private const val INPUT_NUM_HANDS_SIDE_PACKET_NAME = "num_hands"
+        private const val NUM_HANDS = 1
+        private val CAMERA_FACING = CameraHelper.CameraFacing.FRONT
+        private const val FLIP_FRAMES_VERTICALLY = true
+    }
 
-    private lateinit var previewFrameTexture: SurfaceTexture
-    private lateinit var processor: FrameProcessor
-    private lateinit var eglManager: EglManager
-    private lateinit var converter: ExternalTextureConverter
-    private lateinit var cameraHelper: CameraXPreviewHelper
-    private lateinit var previewDisplayView: SurfaceView
+    private lateinit var _previewFrameTexture: SurfaceTexture
+    private lateinit var _processor: FrameProcessor
+    private lateinit var _eglManager: EglManager
+    private lateinit var _converter: ExternalTextureConverter
+    private lateinit var _cameraHelper: CameraXPreviewHelper
+    private lateinit var _previewDisplayView: SurfaceView
 
-    private var handTrackingCallback: ((Array<Array<FloatArray>>) -> Unit)? = null
+    private var _handTrackingCallback: ((Array<Array<FloatArray>>) -> Unit)? = null
 
     private var _isCameraLoaded = MutableLiveData(false)
     val isCameraLoaded: LiveData<Boolean> = _isCameraLoaded
 
     fun initializeConverter() {
-        converter = ExternalTextureConverter(
-            eglManager.context, 2
+        _converter = ExternalTextureConverter(
+            _eglManager.context, 2
         )
-        converter.setFlipY(FLIP_FRAMES_VERTICALLY)
-        converter.setConsumer(processor)
+        _converter.setFlipY(FLIP_FRAMES_VERTICALLY)
+        _converter.setConsumer(_processor)
     }
 
     fun setupPreviewDisplayView(pdv: SurfaceView) {
-        previewDisplayView = pdv
-        previewDisplayView.visibility = View.GONE
-        previewDisplayView
+        _previewDisplayView = pdv
+        _previewDisplayView.visibility = View.GONE
+        _previewDisplayView
             .holder
             .addCallback(
                 object : SurfaceHolder.Callback {
                     override fun surfaceCreated(holder: SurfaceHolder) {
                         Log.d(TAG, "surface created")
 
-                        processor.videoSurfaceOutput.setSurface(holder.surface)
+                        _processor.videoSurfaceOutput.setSurface(holder.surface)
                     }
 
                     override fun surfaceChanged(
@@ -73,61 +75,61 @@ class HandTrackingModel {
                     ) {
                         Log.d(TAG, "surface changed")
                         val viewSize = Size(width, height)
-                        val displaySize = cameraHelper.computeDisplaySizeFromViewSize(viewSize)
-                        val isCameraRotated = cameraHelper.isCameraRotated
-                        converter.setSurfaceTextureAndAttachToGLContext(
-                            previewFrameTexture,
+                        val displaySize = _cameraHelper.computeDisplaySizeFromViewSize(viewSize)
+                        val isCameraRotated = _cameraHelper.isCameraRotated
+                        _converter.setSurfaceTextureAndAttachToGLContext(
+                            _previewFrameTexture,
                             if (isCameraRotated) displaySize.height else displaySize.width,
                             if (isCameraRotated) displaySize.width else displaySize.height
                         )
                         try {
-                            previewFrameTexture.updateTexImage()
+                            _previewFrameTexture.updateTexImage()
                         } catch (exception: Exception) {}
                     }
 
                     override fun surfaceDestroyed(holder: SurfaceHolder) {
                         Log.d(TAG, "surface destroyed")
-                        processor.videoSurfaceOutput.setSurface(null)
+                        _processor.videoSurfaceOutput.setSurface(null)
                     }
                 })
     }
 
     fun startCamera(activity: Activity) {
-        cameraHelper = CameraXPreviewHelper()
-        cameraHelper.setOnCameraStartedListener { surfaceTexture ->
+        _cameraHelper = CameraXPreviewHelper()
+        _cameraHelper.setOnCameraStartedListener { surfaceTexture ->
             Log.d(TAG, "camera started")
-            previewFrameTexture = surfaceTexture!!
-            previewDisplayView.visibility = View.VISIBLE
+            _previewFrameTexture = surfaceTexture!!
+            _previewDisplayView.visibility = View.VISIBLE
         }
-        cameraHelper.startCamera(
+        _cameraHelper.startCamera(
             activity, CAMERA_FACING, null, null
         )
     }
 
     fun initializeProcessor(context: Context?) {
-        eglManager = EglManager(null)
-        processor = FrameProcessor(
+        _eglManager = EglManager(null)
+        _processor = FrameProcessor(
             context,
-            eglManager.nativeContext,
+            _eglManager.nativeContext,
             BINARY_GRAPH_NAME,
             INPUT_VIDEO_STREAM_NAME,
             OUTPUT_VIDEO_STREAM_NAME
         )
-        processor
+        _processor
             .videoSurfaceOutput
             .setFlipY(FLIP_FRAMES_VERTICALLY)
 
-        processor.setOnWillAddFrameListener {
+        _processor.setOnWillAddFrameListener {
             if (_isCameraLoaded.value == false)
                 _isCameraLoaded.postValue(true)
         }
 
-        val packetCreator = processor.packetCreator
+        val packetCreator = _processor.packetCreator
         val inputSidePackets: MutableMap<String, Packet> = HashMap()
         inputSidePackets[INPUT_NUM_HANDS_SIDE_PACKET_NAME] = packetCreator.createInt32(NUM_HANDS)
-        processor.setInputSidePackets(inputSidePackets)
+        _processor.setInputSidePackets(inputSidePackets)
 
-        processor.addPacketCallback(
+        _processor.addPacketCallback(
             OUTPUT_LANDMARKS_STREAM_NAME
         ) { packet: Packet ->
             handsCallback(packet)
@@ -135,8 +137,8 @@ class HandTrackingModel {
     }
 
     fun close() {
-        converter.close()
-        previewDisplayView.visibility = View.GONE
+        _converter.close()
+        _previewDisplayView.visibility = View.GONE
     }
 
     private fun handsCallback(packet: Packet) {
@@ -147,7 +149,7 @@ class HandTrackingModel {
             )
         val handLandmarks = multiHandLandmarks[0]
 
-        handTrackingCallback?.invoke(processHandLandmarks(handLandmarks))
+        _handTrackingCallback?.invoke(processHandLandmarks(handLandmarks))
     }
 
     private fun processHandLandmarks(handLandmarks: LandmarkProto.NormalizedLandmarkList): Array<Array<FloatArray>> {
@@ -184,6 +186,6 @@ class HandTrackingModel {
      * @param handsLandmarks Array(1 - hands) { Array(21 - landmarks) { FloatArray(3 - axes) } }
      */
     fun addCallback(callback: (Array<Array<FloatArray>>) -> Unit) {
-        handTrackingCallback = callback
+        _handTrackingCallback = callback
     }
 }
