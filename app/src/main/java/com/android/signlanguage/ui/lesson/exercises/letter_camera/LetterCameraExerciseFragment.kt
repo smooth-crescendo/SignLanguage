@@ -1,7 +1,9 @@
 package com.android.signlanguage.ui.lesson.exercises.letter_camera
 
+import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.SurfaceView
@@ -14,8 +16,13 @@ import com.android.signlanguage.databinding.FragmentLetterCameraExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
 import com.google.mediapipe.components.PermissionHelper
 import com.google.mediapipe.framework.AndroidAssetUtil
+import java.util.jar.Manifest
 
 class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
+    companion object {
+        private const val TAG = "LetterCameraExerciseFragment"
+    }
+
     private lateinit var _viewModel: LetterCameraExerciseViewModel
     override var viewModelInitialized: ((viewModel: ViewModel) -> Unit)? = null
 
@@ -29,7 +36,8 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
         val binding = FragmentLetterCameraExerciseBinding.inflate(inflater, container, false)
 
         _viewModel = ViewModelProvider(this).get(LetterCameraExerciseViewModel::class.java)
-        _viewModel.signDetectionModel = SignDetectionModelLoader().load(requireActivity().assets, "model.tflite")
+        _viewModel.signDetectionModel =
+            SignDetectionModelLoader().load(requireActivity().assets, "model.tflite")
         viewModelInitialized?.invoke(_viewModel)
 
         binding.lifecycleOwner = this
@@ -45,17 +53,20 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
             _viewModel.handsCallback(it)
         }
 
-        _handTrackingModel.isCameraLoaded.observe(viewLifecycleOwner) {
-            if (it == true) {
-                binding.loadingCameraProgressBar.visibility = View.GONE
-            }
+        _viewModel.isCameraAccessible.observe(viewLifecycleOwner) {
+            if (it)
+                _viewModel.isLoading.value = true
         }
 
-        PermissionHelper.checkAndRequestCameraPermissions(activity)
-        if (PermissionHelper.cameraPermissionsGranted(activity)) {
-            binding.noCameraAccessView.visibility = View.GONE
-            binding.loadingCameraProgressBar.visibility = View.VISIBLE
+        _handTrackingModel.isCameraLoaded.observe(viewLifecycleOwner) {
+            if (_viewModel.isCameraAccessible.value == true)
+                _viewModel.isLoading.value = !it
         }
+
+        if (PermissionHelper.cameraPermissionsGranted(activity))
+            _viewModel.isCameraAccessible.value = true
+        else
+            requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 1)
 
         return binding.root
     }
@@ -78,5 +89,7 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         PermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (PermissionHelper.cameraPermissionsGranted(activity))
+            _viewModel.isCameraAccessible.value = true
     }
 }

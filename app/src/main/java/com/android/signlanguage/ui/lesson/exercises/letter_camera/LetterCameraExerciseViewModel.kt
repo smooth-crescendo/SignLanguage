@@ -1,5 +1,6 @@
 package com.android.signlanguage.ui.lesson.exercises.letter_camera
 
+import android.view.View
 import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.ui.lesson.LessonFragment
@@ -21,6 +22,16 @@ class LetterCameraExerciseViewModel() : ViewModel(),
 
     private val _rightAnswer = MutableLiveData('A' + Random.nextInt(LessonFragment.maxSigns))
     val rightAnswer = Transformations.map(_rightAnswer) { it.toString() }
+
+    val isCameraAccessible = MutableLiveData(false)
+    val cameraAccessErrorVisibility = Transformations.map(isCameraAccessible) {
+        if (it) View.GONE else View.VISIBLE
+    }
+
+    val isLoading = MutableLiveData(false)
+    val loadingVisibility = Transformations.map(isLoading) {
+        if (it) View.VISIBLE else View.GONE
+    }
 
     private val _continuousSignDetector = ContinuousSignDetector(20, 0.8, 750L)
 

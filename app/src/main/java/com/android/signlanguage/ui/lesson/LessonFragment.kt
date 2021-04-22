@@ -33,8 +33,6 @@ class LessonFragment : Fragment() {
 
     private lateinit var _viewModel: LessonViewModel
 
-    private val bottomFragment = LetterCameraExerciseFragment()
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
