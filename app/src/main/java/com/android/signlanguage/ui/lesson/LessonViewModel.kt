@@ -18,11 +18,7 @@ class LessonViewModel : ViewModel(), FinishedListener {
 
     init {
         for (i in 0 until 10) {
-            val newExercise = when (Random().nextInt(2)) {
-                0 -> Exercise.SIGN_LETTER
-                1 -> Exercise.LETTER_CAMERA
-                else -> throw Exception("random value should match an exercise")
-            }
+            val newExercise = Exercise.values()[(Random().nextInt(Exercise.values().size))]
             _exercises.add(newExercise)
         }
 

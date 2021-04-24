@@ -11,6 +11,8 @@ import com.android.signlanguage.R
 import com.android.signlanguage.databinding.FragmentLessonBinding
 import com.android.signlanguage.ui.lesson.exercises.Exercise
 import com.android.signlanguage.ui.lesson.exercises.letter_camera.LetterCameraExerciseFragment
+import com.android.signlanguage.ui.lesson.exercises.letter_sign.LetterSignExerciseFragment
+import com.android.signlanguage.ui.lesson.exercises.letter_sign.LetterSignExerciseViewModel
 import com.android.signlanguage.ui.lesson.exercises.sign_letter.SignLetterExerciseFragment
 
 class LessonFragment : Fragment() {
@@ -68,6 +70,7 @@ class LessonFragment : Fragment() {
         val exerciseFragment = when (exerciseToShow) {
             Exercise.LETTER_CAMERA -> LetterCameraExerciseFragment()
             Exercise.SIGN_LETTER -> SignLetterExerciseFragment()
+            Exercise.LETTER_SIGN -> LetterSignExerciseFragment()
         }
         val fragmentTransaction = parentFragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
