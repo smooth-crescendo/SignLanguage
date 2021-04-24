@@ -12,7 +12,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:context=".ui.lesson.exercises.letter_camera.LetterCameraExerciseFragment">
 
         <RelativeLayout
             android:id="@+id/relativeLayout"
@@ -52,8 +53,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/relativeLayout"
-            tools:context=".ui.lesson.exercises.letter_camera.LetterCameraExerciseFragment">
+            app:layout_constraintTop_toBottomOf="@+id/relativeLayout">
 
             <ProgressBar
                 android:id="@+id/loading_camera_progress_bar"

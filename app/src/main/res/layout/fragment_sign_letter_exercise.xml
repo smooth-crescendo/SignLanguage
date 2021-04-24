@@ -13,7 +13,6 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="8dp"
         tools:context=".ui.lesson.exercises.sign_letter.SignLetterExerciseFragment">
 
         <TextView
@@ -43,6 +42,7 @@
             android:layout_width="0dp"
             android:layout_height="200dp"
             android:layout_gravity="center"
+            android:layout_margin="16dp"
             android:columnCount="2"
             android:useDefaultMargins="true"
             app:layout_constraintBottom_toBottomOf="parent"
