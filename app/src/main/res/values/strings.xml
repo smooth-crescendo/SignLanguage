@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">SignLanguage</string>
+    <string name="no_camera_access">No camera access</string>
+    <string name="letter_camera_task">Show this sign</string>
+    <string name="letter_sign_task">Choose the right sign</string>
+    <string name="sign_letter_task">What sign is this?</string>
 </resources>

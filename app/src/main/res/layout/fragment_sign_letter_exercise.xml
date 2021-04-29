@@ -20,7 +20,7 @@
             android:layout_width="0dp"
             android:layout_margin="16dp"
             android:layout_height="wrap_content"
-            android:text="What sign is this?"
+            android:text="@string/sign_letter_task"
             android:textSize="28sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"

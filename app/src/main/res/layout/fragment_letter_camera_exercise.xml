@@ -27,11 +27,11 @@
                 android:id="@+id/textView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_margin="16dp"
-                android:layout_toLeftOf="@+id/signText"
-                android:text="Show this sign"
+                android:layout_toStartOf="@+id/signText"
+                android:text="@string/letter_camera_task"
                 android:textSize="28sp"
                 android:textStyle="bold" />
 
@@ -39,7 +39,7 @@
                 android:id="@+id/signText"
                 android:layout_width="64dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:layout_margin="16dp"
                 android:text="@{viewModel.rightAnswer}"
                 android:textSize="40sp"
@@ -68,7 +68,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="No camera access"
+                android:text="@string/no_camera_access"
                 android:visibility="@{viewModel.cameraAccessErrorVisibility}" />
         </FrameLayout>
 
