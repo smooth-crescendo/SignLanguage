@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ЯзыкЖестов</string>
+    <string name="app_name">Язык Жестов</string>
     <string name="no_camera_access">Нет доступа к камере</string>
     <string name="letter_camera_task">Покажите этот жест</string>
     <string name="letter_sign_task">Выберите правильный жест</string>
