@@ -8,8 +8,8 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModel
-import com.android.signlanguage.model.HandTrackingModel
-import com.android.signlanguage.model.SignDetectionModelLoader
+import com.android.signlanguage.model.ml.HandTrackingModel
+import com.android.signlanguage.model.ml.SignDetectionModelLoader
 import com.android.signlanguage.databinding.FragmentLetterCameraExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
 import com.google.mediapipe.components.PermissionHelper

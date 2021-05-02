@@ -1,7 +1,6 @@
 package com.android.signlanguage.model.languages
 
 import com.android.signlanguage.R
-import com.android.signlanguage.model.Language
 
 object EnglishLanguage : Language() {
     private const val firstLetter = 'A'

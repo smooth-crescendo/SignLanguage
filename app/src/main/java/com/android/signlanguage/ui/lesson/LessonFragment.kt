@@ -12,6 +12,10 @@ import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.R
 import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.databinding.FragmentLessonBinding
+import com.android.signlanguage.model.languages.EnglishLanguage
+import com.android.signlanguage.model.skill.Language
+import com.android.signlanguage.model.skill.LanguageSkill
+import com.android.signlanguage.model.skill.UserSkill
 
 class LessonFragment : Fragment() {
 
@@ -35,7 +39,14 @@ class LessonFragment : Fragment() {
 
         val binding = FragmentLessonBinding.inflate(inflater, container, false)
 
-        val factory = LessonViewModelFactory { onCurrentScreenChanged(it) }
+        if (UserSkill.getInstance(requireContext()).languages.isEmpty()) {
+            UserSkill.getInstance(requireContext()).languages.add(LanguageSkill(Language.English))
+        }
+
+        val factory = LessonViewModelFactory(
+            { onCurrentScreenChanged(it) },
+            UserSkill.getInstance(requireContext())
+        )
         _viewModel = ViewModelProvider(this, factory).get(LessonViewModel::class.java)
         _viewModel.currentScreenChanged = {
             onCurrentScreenChanged(it)
@@ -44,6 +55,7 @@ class LessonFragment : Fragment() {
         _viewModel.finished.observe(viewLifecycleOwner) {
             if (it) {
                 findNavController().navigateUp()
+                UserSkill.save(requireContext())
             }
         }
 

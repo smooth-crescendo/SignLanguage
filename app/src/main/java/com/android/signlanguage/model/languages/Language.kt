@@ -1,4 +1,4 @@
-package com.android.signlanguage.model
+package com.android.signlanguage.model.languages
 
 abstract class Language {
     abstract fun getLetter(index: Int): Char
