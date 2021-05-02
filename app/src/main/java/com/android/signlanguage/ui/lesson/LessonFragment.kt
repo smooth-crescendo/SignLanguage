@@ -7,6 +7,7 @@ import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.R
 import com.android.signlanguage.ViewModelInitListener
@@ -41,10 +42,9 @@ class LessonFragment : Fragment() {
         }
 
         _viewModel.finished.observe(viewLifecycleOwner) {
-            if (it)
-                parentFragmentManager.beginTransaction()
-                    .hide(parentFragmentManager.fragments[0])
-                    .commit()
+            if (it) {
+                findNavController().navigateUp()
+            }
         }
 
         binding.lifecycleOwner = this
