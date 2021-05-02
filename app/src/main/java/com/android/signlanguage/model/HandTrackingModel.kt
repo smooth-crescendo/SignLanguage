@@ -1,4 +1,4 @@
-package com.android.signlanguage
+package com.android.signlanguage.model
 
 import android.app.Activity
 import android.content.Context

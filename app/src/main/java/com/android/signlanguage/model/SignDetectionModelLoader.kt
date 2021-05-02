@@ -1,4 +1,4 @@
-package com.android.signlanguage
+package com.android.signlanguage.model
 
 import android.content.res.AssetManager
 import org.tensorflow.lite.Interpreter

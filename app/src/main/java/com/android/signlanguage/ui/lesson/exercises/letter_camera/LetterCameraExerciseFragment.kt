@@ -1,22 +1,19 @@
 package com.android.signlanguage.ui.lesson.exercises.letter_camera
 
-import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModel
-import com.android.signlanguage.HandTrackingModel
-import com.android.signlanguage.SignDetectionModelLoader
+import com.android.signlanguage.model.HandTrackingModel
+import com.android.signlanguage.model.SignDetectionModelLoader
 import com.android.signlanguage.databinding.FragmentLetterCameraExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
 import com.google.mediapipe.components.PermissionHelper
 import com.google.mediapipe.framework.AndroidAssetUtil
-import java.util.jar.Manifest
 
 class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
     companion object {
