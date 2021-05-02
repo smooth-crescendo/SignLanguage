@@ -11,6 +11,11 @@ import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.databinding.FragmentLetterSignExerciseBinding
 
 class LetterSignExerciseFragment : Fragment(), ViewModelInitListener {
+
+    companion object {
+        private const val TAG = "LetterSignExerciseFragment"
+    }
+
     private lateinit var _viewModel: LetterSignExerciseViewModel
 
     override var viewModelInitialized: ((viewModel: ViewModel) -> Unit)? = null
