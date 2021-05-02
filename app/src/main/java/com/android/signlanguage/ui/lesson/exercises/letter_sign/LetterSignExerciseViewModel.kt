@@ -1,5 +1,6 @@
 package com.android.signlanguage.ui.lesson.exercises.letter_sign
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -10,6 +11,7 @@ import kotlin.random.Random
 
 class LetterSignExerciseViewModel : ViewModel(), FinishedListener {
     companion object {
+        private const val TAG = "LetterSignExerciseViewModel"
         private const val POSSIBLE_ANSWERS = 2
     }
 
@@ -21,6 +23,7 @@ class LetterSignExerciseViewModel : ViewModel(), FinishedListener {
     private var _possibleAnswers: List<MutableLiveData<Char>> = List(POSSIBLE_ANSWERS) { MutableLiveData() }
 
     init {
+        Log.d(TAG, "init: ")
         val rightSign = 'A' + Random.nextInt(LessonFragment.signsDictionary.size)
         _possibleAnswers[0].value = rightSign
         for (i in 1 until POSSIBLE_ANSWERS) {
@@ -42,6 +45,7 @@ class LetterSignExerciseViewModel : ViewModel(), FinishedListener {
     }
 
     fun answer(signIndex: Int) {
+        Log.d(TAG, "answer: ")
         if (signIndex == _rightAnswerIndex)
             _finished.value = true
     }
