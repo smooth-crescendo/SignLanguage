@@ -1,4 +1,4 @@
-package com.android.signlanguage.ui.lesson
+package com.android.signlanguage.ui.lesson.new_sign
 
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModel
-import com.android.signlanguage.R
 import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.databinding.FragmentNewSignBinding
 

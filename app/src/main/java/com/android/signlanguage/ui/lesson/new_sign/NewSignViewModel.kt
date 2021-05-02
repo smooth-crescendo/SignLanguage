@@ -1,4 +1,4 @@
-package com.android.signlanguage.ui.lesson
+package com.android.signlanguage.ui.lesson.new_sign
 
 import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener

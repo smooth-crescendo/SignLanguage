@@ -7,13 +7,13 @@
 
         <variable
             name="viewModel"
-            type="com.android.signlanguage.ui.lesson.NewSignViewModel" />
+            type="com.android.signlanguage.ui.lesson.new_sign.NewSignViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.lesson.NewSignFragment">
+        tools:context=".ui.lesson.new_sign.NewSignFragment">
 
         <TextView
             android:layout_width="wrap_content"

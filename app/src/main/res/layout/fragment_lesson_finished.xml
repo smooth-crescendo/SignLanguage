@@ -7,13 +7,13 @@
 
         <variable
             name="viewModel"
-            type="com.android.signlanguage.ui.lesson.LessonFinishedViewModel" />
+            type="com.android.signlanguage.ui.lesson.lesson_finished.LessonFinishedViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.lesson.LessonFinishedFragment">
+        tools:context=".ui.lesson.lesson_finished.LessonFinishedFragment">
 
         <TextView
             android:id="@+id/message"

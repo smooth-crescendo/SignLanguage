@@ -1,4 +1,4 @@
-package com.android.signlanguage.ui.lesson
+package com.android.signlanguage.ui.lesson.lesson_finished
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

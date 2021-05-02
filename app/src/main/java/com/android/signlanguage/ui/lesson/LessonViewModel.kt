@@ -11,6 +11,8 @@ import com.android.signlanguage.model.languages.EnglishLanguage
 import com.android.signlanguage.ui.lesson.exercises.letter_camera.LetterCameraExerciseFragment
 import com.android.signlanguage.ui.lesson.exercises.letter_sign.LetterSignExerciseFragment
 import com.android.signlanguage.ui.lesson.exercises.sign_letter.SignLetterExerciseFragment
+import com.android.signlanguage.ui.lesson.lesson_finished.LessonFinishedFragment
+import com.android.signlanguage.ui.lesson.new_sign.NewSignFragment
 import java.util.*
 
 class LessonViewModel(var currentScreenChanged: ((lessonScreen: Fragment) -> Unit)? = null) :
