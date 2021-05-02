@@ -4,4 +4,6 @@
     <string name="letter_camera_task">Show this sign</string>
     <string name="letter_sign_task">Choose the right sign</string>
     <string name="sign_letter_task">What sign is this?</string>
+    <string name="continue_button">Continue</string>
+    <string name="new_sign_message">New sign!</string>
 </resources>

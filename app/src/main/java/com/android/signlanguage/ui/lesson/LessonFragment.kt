@@ -1,23 +1,22 @@
 package com.android.signlanguage.ui.lesson
 
+import android.app.Application
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.R
+import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.databinding.FragmentLessonBinding
-import com.android.signlanguage.ui.lesson.exercises.Exercise
-import com.android.signlanguage.ui.lesson.exercises.letter_camera.LetterCameraExerciseFragment
-import com.android.signlanguage.ui.lesson.exercises.letter_sign.LetterSignExerciseFragment
-import com.android.signlanguage.ui.lesson.exercises.letter_sign.LetterSignExerciseViewModel
-import com.android.signlanguage.ui.lesson.exercises.sign_letter.SignLetterExerciseFragment
 
 class LessonFragment : Fragment() {
 
     companion object {
+        private const val TAG = "LessonFragment"
+
         init {
             System.loadLibrary("mediapipe_jni")
             System.loadLibrary("opencv_java3")
@@ -40,48 +39,51 @@ class LessonFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d(TAG, "onCreateView: ${hashCode()}")
+
         val binding = FragmentLessonBinding.inflate(inflater, container, false)
 
-        _viewModel = ViewModelProvider(this).get(LessonViewModel::class.java)
+        val factory = LessonViewModelFactory { onCurrentScreenChanged(it) }
+        _viewModel = ViewModelProvider(this, factory).get(LessonViewModel::class.java)
+        _viewModel.currentScreenChanged = {
+            onCurrentScreenChanged(it)
+        }
+
+        _viewModel.finished.observe(viewLifecycleOwner) {
+            if (it)
+                parentFragmentManager.beginTransaction()
+                    .hide(parentFragmentManager.fragments[0])
+                    .commit()
+        }
 
         binding.lifecycleOwner = this
         binding.viewModel = _viewModel
 
-        _viewModel.currentExercise.observe(viewLifecycleOwner) {
-            showExercise(it)
-        }
-
-        _viewModel.finished.observe(viewLifecycleOwner) {
-            if (it) {
-                if (parentFragmentManager.fragments.size > 0) {
-                    val fragmentTransaction = parentFragmentManager.beginTransaction()
-                        .hide(parentFragmentManager.fragments[0])
-                        .commit()
-                }
-
-                Toast.makeText(context, "Congratulations! You won!", Toast.LENGTH_SHORT).show()
-            }
-        }
-
         return binding.root
     }
 
-    private fun showExercise(exerciseToShow: Exercise) {
-        val exerciseFragment = when (exerciseToShow) {
-            Exercise.LETTER_CAMERA -> LetterCameraExerciseFragment()
-            Exercise.SIGN_LETTER -> SignLetterExerciseFragment()
-            Exercise.LETTER_SIGN -> LetterSignExerciseFragment()
-        }
-        val fragmentTransaction = parentFragmentManager.beginTransaction()
+    private fun onCurrentScreenChanged(screen: Fragment) {
+        showScreen(screen)
+    }
+
+    private fun showScreen(screenToShow: Fragment) {
+        Log.d(TAG, "showScreen: ${hashCode()}")
+
+        if (screenToShow !is ViewModelInitListener)
+            return
+
+        parentFragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
-            .replace(R.id.exercise_fragment_container, exerciseFragment)
+            .replace(R.id.exercise_fragment_container, screenToShow)
             .commit()
 
-        exerciseFragment.viewModelInitialized = { vm ->
+        screenToShow.viewModelInitialized = { vm ->
             if (vm is FinishedListener) {
-                vm.finished.observe(viewLifecycleOwner) {
-                    if (it)
-                        _viewModel.startNextExercise()
+                vm.finished.observeForever {
+                    if (it) {
+                        Log.d(TAG, "showScreen: vmFinished")
+                        _viewModel.startNextScreen()
+                    }
                 }
             } else throw ClassCastException("view model must implement FinishedListener")
         }

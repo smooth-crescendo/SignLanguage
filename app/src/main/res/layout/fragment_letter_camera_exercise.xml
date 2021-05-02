@@ -55,6 +55,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/relativeLayout">
 
+            <View android:layout_height="match_parent"
+                android:layout_width="match_parent"/>
+
             <ProgressBar
                 android:id="@+id/loading_camera_progress_bar"
                 android:layout_width="64dp"
