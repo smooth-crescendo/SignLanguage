@@ -1,14 +1,12 @@
 package com.android.signlanguage.ui.lesson.exercises.sign_letter
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener
+import com.android.signlanguage.model.languages.EnglishLanguage
 import com.android.signlanguage.ui.lesson.LessonFragment
 import kotlin.random.Random
 
-class SignLetterExerciseViewModel : ViewModel(), FinishedListener {
+class SignLetterExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
     companion object {
         private const val POSSIBLE_ANSWERS = 4
     }
@@ -21,17 +19,16 @@ class SignLetterExerciseViewModel : ViewModel(), FinishedListener {
     private var _possibleAnswers: List<MutableLiveData<Char>> = List(POSSIBLE_ANSWERS) { MutableLiveData() }
 
     init {
-        val rightSign = 'A' + Random.nextInt(LessonFragment.signsDictionary.size)
-        _possibleAnswers[0].value = rightSign
+        _possibleAnswers[0].value = sign
         for (i in 1 until POSSIBLE_ANSWERS) {
             var nextPossibleSign: Char
             do {
-                nextPossibleSign = 'A' + Random.nextInt(LessonFragment.signsDictionary.size)
+                nextPossibleSign = EnglishLanguage.getLetter(Random.nextInt(EnglishLanguage.maxLetters))
             } while (_possibleAnswers.indexOfFirst { it.value == nextPossibleSign } != -1)
             _possibleAnswers[i].value = nextPossibleSign
         }
         _possibleAnswers = _possibleAnswers.shuffled()
-        _rightAnswerIndex = _possibleAnswers.indexOfFirst { it.value == rightSign}
+        _rightAnswerIndex = _possibleAnswers.indexOfFirst { it.value == sign}
     }
 
     val possibleAnswer1 = Transformations.map(_possibleAnswers[0]) { it.toString() }
@@ -44,5 +41,11 @@ class SignLetterExerciseViewModel : ViewModel(), FinishedListener {
     fun answer(signIndex: Int) {
         if (signIndex == _rightAnswerIndex)
             _finished.value = true
+    }
+}
+
+class SignLetterExerciseViewModelFactory(val sign: Char) : ViewModelProvider.Factory {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return SignLetterExerciseViewModel(sign) as T
     }
 }

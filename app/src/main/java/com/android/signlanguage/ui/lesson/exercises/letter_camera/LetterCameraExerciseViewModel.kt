@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 import kotlin.random.Random
 
-class LetterCameraExerciseViewModel() : ViewModel(),
+class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
     FinishedListener {
 
     companion object {
@@ -20,8 +20,12 @@ class LetterCameraExerciseViewModel() : ViewModel(),
     private val _finished = MutableLiveData(false)
     override val finished: LiveData<Boolean> = _finished
 
-    private val _rightAnswer = MutableLiveData('A' + Random.nextInt(LessonFragment.maxSigns))
+    private val _rightAnswer = MutableLiveData<Char>()
     val rightAnswer = Transformations.map(_rightAnswer) { it.toString() }
+
+    init {
+        _rightAnswer.value = sign
+    }
 
     val isCameraAccessible = MutableLiveData(false)
     val cameraAccessErrorVisibility = Transformations.map(isCameraAccessible) {
@@ -60,5 +64,11 @@ class LetterCameraExerciseViewModel() : ViewModel(),
             predictedSign == _rightAnswer.value,
             System.currentTimeMillis()
         )
+    }
+}
+
+class LetterCameraExerciseViewModelFactory(val sign: Char) : ViewModelProvider.Factory {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return LetterCameraExerciseViewModel(sign) as T
     }
 }

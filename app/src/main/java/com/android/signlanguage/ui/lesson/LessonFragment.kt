@@ -21,15 +21,6 @@ class LessonFragment : Fragment() {
             System.loadLibrary("mediapipe_jni")
             System.loadLibrary("opencv_java3")
         }
-
-        val signsDictionary = mapOf(
-            Pair('A', R.drawable.letter_a),
-            Pair('B', R.drawable.letter_b),
-            Pair('C', R.drawable.letter_c),
-            Pair('D', R.drawable.letter_d),
-            Pair('E', R.drawable.letter_e),
-        )
-        val maxSigns = signsDictionary.size
     }
 
     private lateinit var _viewModel: LessonViewModel

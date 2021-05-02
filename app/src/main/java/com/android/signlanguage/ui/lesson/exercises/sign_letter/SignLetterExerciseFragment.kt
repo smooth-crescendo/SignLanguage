@@ -11,6 +11,21 @@ import com.android.signlanguage.databinding.FragmentSignLetterExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
 
 class SignLetterExerciseFragment : Fragment(), ViewModelInitListener {
+
+    companion object {
+        private const val TAG = "SignLetterExerciseFragment"
+
+        private const val SIGN_BUNDLE = "sign"
+
+        fun newInstance(sign: Char): SignLetterExerciseFragment {
+            val args = Bundle()
+            args.putChar(SIGN_BUNDLE, sign)
+            val fragment = SignLetterExerciseFragment()
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
     private lateinit var _viewModel: SignLetterExerciseViewModel
     override var viewModelInitialized: ((viewModel: ViewModel) -> Unit)? = null
 
@@ -20,7 +35,8 @@ class SignLetterExerciseFragment : Fragment(), ViewModelInitListener {
     ): View? {
         val binding = FragmentSignLetterExerciseBinding.inflate(inflater, container, false)
 
-        _viewModel = ViewModelProvider(this).get(SignLetterExerciseViewModel::class.java)
+        val factory = SignLetterExerciseViewModelFactory(requireArguments().getChar(SIGN_BUNDLE))
+        _viewModel = ViewModelProvider(this, factory).get(SignLetterExerciseViewModel::class.java)
         viewModelInitialized?.invoke(_viewModel)
 
         binding.lifecycleOwner = this

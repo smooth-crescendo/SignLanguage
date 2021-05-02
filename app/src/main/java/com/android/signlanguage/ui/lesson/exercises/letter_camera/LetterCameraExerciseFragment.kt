@@ -21,6 +21,16 @@ import java.util.jar.Manifest
 class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
     companion object {
         private const val TAG = "LetterCameraExerciseFragment"
+
+        private const val SIGN_BUNDLE = "sign"
+
+        fun newInstance(sign: Char): LetterCameraExerciseFragment {
+            val args = Bundle()
+            args.putChar(SIGN_BUNDLE, sign)
+            val fragment = LetterCameraExerciseFragment()
+            fragment.arguments = args
+            return fragment
+        }
     }
 
     private lateinit var _viewModel: LetterCameraExerciseViewModel
@@ -35,7 +45,8 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
     ): View? {
         val binding = FragmentLetterCameraExerciseBinding.inflate(inflater, container, false)
 
-        _viewModel = ViewModelProvider(this).get(LetterCameraExerciseViewModel::class.java)
+        val factory = LetterCameraExerciseViewModelFactory(requireArguments().getChar(SIGN_BUNDLE))
+        _viewModel = ViewModelProvider(this, factory).get(LetterCameraExerciseViewModel::class.java)
         _viewModel.signDetectionModel =
             SignDetectionModelLoader().load(requireActivity().assets, "model.tflite")
         viewModelInitialized?.invoke(_viewModel)

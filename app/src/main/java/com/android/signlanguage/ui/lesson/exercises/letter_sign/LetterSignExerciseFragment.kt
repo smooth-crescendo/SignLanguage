@@ -14,6 +14,16 @@ class LetterSignExerciseFragment : Fragment(), ViewModelInitListener {
 
     companion object {
         private const val TAG = "LetterSignExerciseFragment"
+
+        private const val SIGN_BUNDLE = "sign"
+
+        fun newInstance(sign: Char): LetterSignExerciseFragment {
+            val args = Bundle()
+            args.putChar(SIGN_BUNDLE, sign)
+            val fragment = LetterSignExerciseFragment()
+            fragment.arguments = args
+            return fragment
+        }
     }
 
     private lateinit var _viewModel: LetterSignExerciseViewModel
@@ -26,7 +36,8 @@ class LetterSignExerciseFragment : Fragment(), ViewModelInitListener {
     ): View? {
         val binding = FragmentLetterSignExerciseBinding.inflate(inflater, container, false)
 
-        _viewModel = ViewModelProvider(this).get(LetterSignExerciseViewModel::class.java)
+        val factory = LetterSignExerciseViewModelFactory(requireArguments().getChar(SIGN_BUNDLE))
+        _viewModel = ViewModelProvider(this, factory).get(LetterSignExerciseViewModel::class.java)
         viewModelInitialized?.invoke(_viewModel)
 
         binding.lifecycleOwner = this
