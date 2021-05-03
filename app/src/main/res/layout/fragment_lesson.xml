@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="viewModel"
             type="com.android.signlanguage.ui.lesson.LessonViewModel" />
@@ -15,14 +16,18 @@
         android:background="?attr/colorSurface"
         tools:context=".ui.lesson.LessonFragment">
 
-        <TextView
-            android:id="@+id/textView2"
+        <ProgressBar
+            android:id="@+id/progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_margin="16dp"
+            android:gravity="center"
+            android:max="100"
+            android:progress="@{viewModel.progress}"
             android:text="lesson progress"
-            android:gravity="center"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/exercise_fragment_container"
@@ -31,6 +36,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView2" />
+            app:layout_constraintTop_toBottomOf="@+id/progress" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

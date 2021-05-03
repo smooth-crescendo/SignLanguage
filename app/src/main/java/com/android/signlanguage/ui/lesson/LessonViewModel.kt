@@ -38,6 +38,10 @@ class LessonViewModel(
     private var _currentScreen = MutableLiveData<Fragment>()
     val currentScreen: LiveData<Fragment> = _currentScreen
 
+    private val exercisesCount: Int
+    private val _progress = MutableLiveData(0)
+    val progress: LiveData<Int> = _progress
+
     private val _finished = MutableLiveData(false)
     override val finished: LiveData<Boolean> = _finished
 
@@ -52,7 +56,7 @@ class LessonViewModel(
             _screens.add(NewSignFragment.newInstance(newSign))
         }
 
-        for (i in 0 until 5) {
+        for (i in 0 until 8) {
             val newExercise = EXERCISES[(Random().nextInt(EXERCISES.size))]
             // FOR TEST PURPOSES
             // val newExercise = LetterSignExerciseFragment::class.java
@@ -76,6 +80,8 @@ class LessonViewModel(
 
         _screens.add(LessonFinishedFragment())
 
+        exercisesCount = countExercises()
+
         startNextScreen()
     }
 
@@ -88,6 +94,20 @@ class LessonViewModel(
             _currentScreen.value = nextScreen
             currentScreenChanged?.invoke(nextScreen)
         }
+        _progress.value = calculateProgress()
+        Log.d(TAG, "startNextScreen: ${_progress.value}")
+    }
+
+    private fun calculateProgress() =
+        (100.0 - countExercises().toDouble() / exercisesCount.toDouble() * 100.0).toInt()
+
+    private fun countExercises(): Int {
+        var result = _screens.count { EXERCISES.contains(it.javaClass) }
+        currentScreen.value?.let {
+            if (EXERCISES.contains(it.javaClass))
+                result++
+        }
+        return result
     }
 }
 
