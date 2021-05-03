@@ -6,7 +6,7 @@ import com.squareup.moshi.Moshi
 import java.io.File
 
 class UserSkill {
-    val languages: MutableList<LanguageSkill> = mutableListOf()
+    val unlockedSigns: MutableList<SignSkill> = mutableListOf()
 
     companion object {
         private const val FILENAME = "user_skill"

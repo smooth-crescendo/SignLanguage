@@ -1,8 +1,8 @@
-package com.android.signlanguage.model.languages
+package com.android.signlanguage.model
 
 import com.android.signlanguage.R
 
-object EnglishLanguage : Language() {
+object Language {
     private const val firstLetter = 'A'
     val maxLetters
         get() = drawables.size
@@ -15,15 +15,15 @@ object EnglishLanguage : Language() {
         R.drawable.letter_e
     )
 
-    override fun getLetter(index: Int): Char  {
+    fun getLetter(index: Int): Char  {
         return firstLetter + index
     }
 
-    override fun getIndex(letter: Char): Int {
+    fun getIndex(letter: Char): Int {
         return letter - firstLetter
     }
 
-    override fun getDrawable(letter: Char): Int {
+    fun getDrawable(letter: Char): Int {
         return drawables[getIndex(letter)]
     }
 }

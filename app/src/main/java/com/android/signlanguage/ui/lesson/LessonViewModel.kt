@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.android.signlanguage.FinishedListener
-import com.android.signlanguage.model.languages.EnglishLanguage
+import com.android.signlanguage.model.Language
 import com.android.signlanguage.model.skill.SignSkill
 import com.android.signlanguage.model.skill.UserSkill
 import com.android.signlanguage.ui.lesson.exercises.letter_camera.LetterCameraExerciseFragment
@@ -31,8 +31,6 @@ class LessonViewModel(
             SignLetterExerciseFragment::class.java,
             LetterCameraExerciseFragment::class.java
         )
-
-        private val LANGUAGE = EnglishLanguage
     }
 
     private var _currentScreen = MutableLiveData<Fragment>()
@@ -50,9 +48,9 @@ class LessonViewModel(
     init {
         Log.d(TAG, "init: ")
 
-        while (userSkill.languages[0].unlockedSigns.size < 4) {
-            val newSign = LANGUAGE.getLetter(userSkill.languages[0].unlockedSigns.size)
-            userSkill.languages[0].unlockedSigns.add(SignSkill(newSign, 0.0))
+        while (userSkill.unlockedSigns.size < 4) {
+            val newSign = Language.getLetter(userSkill.unlockedSigns.size)
+            userSkill.unlockedSigns.add(SignSkill(newSign, 0.0))
             _screens.add(NewSignFragment.newInstance(newSign))
         }
 
@@ -62,15 +60,15 @@ class LessonViewModel(
             // val newExercise = LetterSignExerciseFragment::class.java
             val f = when (newExercise) {
                 LetterCameraExerciseFragment::class.java -> {
-                    val sign = LANGUAGE.getLetter(Random().nextInt(LANGUAGE.maxLetters))
+                    val sign = Language.getLetter(Random().nextInt(Language.maxLetters))
                     LetterCameraExerciseFragment.newInstance(sign)
                 }
                 SignLetterExerciseFragment::class.java -> {
-                    val sign = LANGUAGE.getLetter(Random().nextInt(LANGUAGE.maxLetters))
+                    val sign = Language.getLetter(Random().nextInt(Language.maxLetters))
                     SignLetterExerciseFragment.newInstance(sign)
                 }
                 LetterSignExerciseFragment::class.java -> {
-                    val sign = LANGUAGE.getLetter(Random().nextInt(LANGUAGE.maxLetters))
+                    val sign = Language.getLetter(Random().nextInt(Language.maxLetters))
                     LetterSignExerciseFragment.newInstance(sign)
                 }
                 else -> newExercise.newInstance() as Fragment

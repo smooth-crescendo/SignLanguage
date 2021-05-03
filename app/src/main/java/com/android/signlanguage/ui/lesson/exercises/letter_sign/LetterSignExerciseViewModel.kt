@@ -3,8 +3,7 @@ package com.android.signlanguage.ui.lesson.exercises.letter_sign
 import android.util.Log
 import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener
-import com.android.signlanguage.model.languages.EnglishLanguage
-import com.android.signlanguage.ui.lesson.LessonFragment
+import com.android.signlanguage.model.Language
 import kotlin.random.Random
 
 class LetterSignExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
@@ -26,7 +25,7 @@ class LetterSignExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
         for (i in 1 until POSSIBLE_ANSWERS) {
             var nextPossibleSign: Char
             do {
-                nextPossibleSign = EnglishLanguage.getLetter(Random.nextInt(EnglishLanguage.maxLetters))
+                nextPossibleSign = Language.getLetter(Random.nextInt(Language.maxLetters))
             } while (_possibleAnswers.indexOfFirst { it.value == nextPossibleSign } != -1)
             _possibleAnswers[i].value = nextPossibleSign
         }
