@@ -12,12 +12,15 @@ import com.android.signlanguage.model.ml.HandTrackingModel
 import com.android.signlanguage.model.ml.SignDetectionModelLoader
 import com.android.signlanguage.databinding.FragmentLetterCameraExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
+import com.android.signlanguage.ui.lesson.Exercise
 import com.google.mediapipe.components.PermissionHelper
 import com.google.mediapipe.framework.AndroidAssetUtil
 
 class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
-    companion object {
+    companion object : Exercise {
         private const val TAG = "LetterCameraExerciseFragment"
+
+        override val unlockedSignsRequired: Int = 1
 
         private const val SIGN_BUNDLE = "sign"
 

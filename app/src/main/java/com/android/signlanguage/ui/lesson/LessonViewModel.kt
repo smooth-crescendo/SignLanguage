@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.model.Language
-import com.android.signlanguage.model.skill.SignSkill
 import com.android.signlanguage.model.skill.UserSkill
 import com.android.signlanguage.ui.lesson.exercises.letter_camera.LetterCameraExerciseFragment
 import com.android.signlanguage.ui.lesson.exercises.letter_sign.LetterSignExerciseFragment
@@ -18,8 +17,7 @@ import com.android.signlanguage.ui.lesson.new_sign.NewSignFragment
 import java.util.*
 
 class LessonViewModel(
-    var currentScreenChanged: ((lessonScreen: Fragment) -> Unit)? = null,
-    val userSkill: UserSkill
+    var currentScreenChanged: ((lessonScreen: Fragment) -> Unit)? = null
 ) :
     ViewModel(), FinishedListener {
 
@@ -31,6 +29,22 @@ class LessonViewModel(
             SignLetterExerciseFragment::class.java,
             LetterCameraExerciseFragment::class.java
         )
+
+        fun getExerciseCompanion(exercise: Class<out Any>): Exercise {
+            return when (exercise) {
+                LetterSignExerciseFragment::class.java -> LetterSignExerciseFragment
+                SignLetterExerciseFragment::class.java -> SignLetterExerciseFragment
+                LetterCameraExerciseFragment::class.java -> LetterCameraExerciseFragment
+                else -> throw Exception("Unknown exercise fragment class")
+            }
+        }
+
+        fun filterExercises(): List<Class<out Any>> {
+            return EXERCISES.filter {
+                val exercise = getExerciseCompanion(it)
+                UserSkill.requireInstance().unlockedSignsCount >= exercise.unlockedSignsRequired
+            }
+        }
     }
 
     private var _currentScreen = MutableLiveData<Fragment>()
@@ -45,30 +59,33 @@ class LessonViewModel(
 
     private val _screens = LinkedList<Fragment>()
 
+    private val _userSkill = UserSkill.requireInstance()
+
     init {
         Log.d(TAG, "init: ")
 
-        while (userSkill.unlockedSignsCount < 4) {
-            val newSign = Language.getLetter(userSkill.unlockedSignsCount)
-            userSkill.unlockSign(newSign)
+        while (_userSkill.unlockedSignsCount < 2) {
+            val newSign = Language.getLetter(_userSkill.unlockedSignsCount)
+            _userSkill.unlockSign(newSign)
             _screens.add(NewSignFragment.newInstance(newSign))
         }
 
         for (i in 0 until 8) {
-            val newExercise = EXERCISES[(Random().nextInt(EXERCISES.size))]
+            val filteredExercises = filterExercises()
+            val newExercise = filteredExercises.random()
             // FOR TEST PURPOSES
             // val newExercise = LetterSignExerciseFragment::class.java
             val f = when (newExercise) {
                 LetterCameraExerciseFragment::class.java -> {
-                    val sign = Language.getLetter(Random().nextInt(Language.maxLetters))
+                    val sign = _userSkill.getRandomUnlockedSign()
                     LetterCameraExerciseFragment.newInstance(sign)
                 }
                 SignLetterExerciseFragment::class.java -> {
-                    val sign = Language.getLetter(Random().nextInt(Language.maxLetters))
+                    val sign = _userSkill.getRandomUnlockedSign()
                     SignLetterExerciseFragment.newInstance(sign)
                 }
                 LetterSignExerciseFragment::class.java -> {
-                    val sign = Language.getLetter(Random().nextInt(Language.maxLetters))
+                    val sign = _userSkill.getRandomUnlockedSign()
                     LetterSignExerciseFragment.newInstance(sign)
                 }
                 else -> newExercise.newInstance() as Fragment
@@ -110,11 +127,10 @@ class LessonViewModel(
 }
 
 class LessonViewModelFactory(
-    var currentScreenChanged: ((lessonScreen: Fragment) -> Unit)? = null,
-    val userSkill: UserSkill
+    var currentScreenChanged: ((lessonScreen: Fragment) -> Unit)? = null
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return LessonViewModel(currentScreenChanged, userSkill) as T
+        return LessonViewModel(currentScreenChanged) as T
     }
 }

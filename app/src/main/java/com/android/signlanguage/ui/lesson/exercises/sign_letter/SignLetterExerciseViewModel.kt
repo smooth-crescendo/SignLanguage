@@ -3,6 +3,7 @@ package com.android.signlanguage.ui.lesson.exercises.sign_letter
 import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.model.Language
+import com.android.signlanguage.model.skill.UserSkill
 import kotlin.random.Random
 
 class SignLetterExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
@@ -15,19 +16,23 @@ class SignLetterExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
 
     private val _rightAnswerIndex: Int
 
-    private var _possibleAnswers: List<MutableLiveData<Char>> = List(POSSIBLE_ANSWERS) { MutableLiveData() }
+    private var _possibleAnswers: List<MutableLiveData<Char>> =
+        List(POSSIBLE_ANSWERS) { MutableLiveData() }
 
     init {
         _possibleAnswers[0].value = sign
         for (i in 1 until POSSIBLE_ANSWERS) {
             var nextPossibleSign: Char
+            val userSkill = UserSkill.requireInstance()
+            if (userSkill.unlockedSignsCount < POSSIBLE_ANSWERS)
+                throw Exception("This exercise requires $POSSIBLE_ANSWERS unlocked signs, but ${userSkill.unlockedSignsCount} was provided")
             do {
-                nextPossibleSign = Language.getLetter(Random.nextInt(Language.maxLetters))
+                nextPossibleSign = userSkill.getRandomUnlockedSign()
             } while (_possibleAnswers.indexOfFirst { it.value == nextPossibleSign } != -1)
             _possibleAnswers[i].value = nextPossibleSign
         }
         _possibleAnswers = _possibleAnswers.shuffled()
-        _rightAnswerIndex = _possibleAnswers.indexOfFirst { it.value == sign}
+        _rightAnswerIndex = _possibleAnswers.indexOfFirst { it.value == sign }
     }
 
     val possibleAnswer1 = Transformations.map(_possibleAnswers[0]) { it.toString() }

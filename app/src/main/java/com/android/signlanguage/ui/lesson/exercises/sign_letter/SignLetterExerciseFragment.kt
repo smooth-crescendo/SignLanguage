@@ -9,11 +9,14 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModel
 import com.android.signlanguage.databinding.FragmentSignLetterExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
+import com.android.signlanguage.ui.lesson.Exercise
 
 class SignLetterExerciseFragment : Fragment(), ViewModelInitListener {
 
-    companion object {
+    companion object: Exercise {
         private const val TAG = "SignLetterExerciseFragment"
+
+        override val unlockedSignsRequired: Int = 4
 
         private const val SIGN_BUNDLE = "sign"
 

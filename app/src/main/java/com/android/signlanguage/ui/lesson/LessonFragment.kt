@@ -34,14 +34,11 @@ class LessonFragment : Fragment() {
     ): View? {
         Log.d(TAG, "onCreateView: ${hashCode()}")
 
+        UserSkill.getInstance(requireContext())
+
         val binding = FragmentLessonBinding.inflate(inflater, container, false)
 
-        val userSkill = UserSkill.getInstance(requireContext())
-
-        val factory = LessonViewModelFactory(
-            { onCurrentScreenChanged(it) },
-            userSkill
-        )
+        val factory = LessonViewModelFactory { onCurrentScreenChanged(it) }
         _viewModel = ViewModelProvider(this, factory).get(LessonViewModel::class.java)
         _viewModel.currentScreenChanged = {
             onCurrentScreenChanged(it)

@@ -1,9 +1,11 @@
 package com.android.signlanguage.model.skill
 
 import android.content.Context
+import com.android.signlanguage.model.Language
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import java.io.File
+import kotlin.random.Random
 
 class UserSkill {
     private val _unlockedSigns: MutableList<SignSkill> = mutableListOf()
@@ -19,6 +21,10 @@ class UserSkill {
         _unlockedSigns.clear()
     }
 
+    fun getRandomUnlockedSign(): Char {
+        return _unlockedSigns.random().sign
+    }
+
     companion object {
         private const val FILENAME = "user_skill"
 
@@ -27,6 +33,18 @@ class UserSkill {
         fun getInstance(context: Context): UserSkill {
             if (instance == null) {
                 instance = read(context)
+            }
+            return instance!!
+        }
+
+        /**
+         * Call this only if you are sure the instance was acquired earlier.
+         * Otherwise call getInstance(context) first
+         * @exception NullPointerException if instance was not acquired earlier
+         */
+        fun requireInstance(): UserSkill {
+            if (instance == null) {
+                throw NullPointerException("Instance is null, you shouldn't call this method. Call 'getInstance(context)' first")
             }
             return instance!!
         }
