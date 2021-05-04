@@ -6,7 +6,18 @@ import com.squareup.moshi.Moshi
 import java.io.File
 
 class UserSkill {
-    val unlockedSigns: MutableList<SignSkill> = mutableListOf()
+    private val _unlockedSigns: MutableList<SignSkill> = mutableListOf()
+    val unlockedSignsCount
+        get() = _unlockedSigns.size
+
+    fun unlockSign(sign: Char, skill: Double = 0.0) {
+        if (!_unlockedSigns.contains(sign))
+            _unlockedSigns += SignSkill(sign, skill)
+    }
+
+    fun reset() {
+        _unlockedSigns.clear()
+    }
 
     companion object {
         private const val FILENAME = "user_skill"

@@ -48,9 +48,9 @@ class LessonViewModel(
     init {
         Log.d(TAG, "init: ")
 
-        while (userSkill.unlockedSigns.size < 4) {
-            val newSign = Language.getLetter(userSkill.unlockedSigns.size)
-            userSkill.unlockedSigns.add(SignSkill(newSign, 0.0))
+        while (userSkill.unlockedSignsCount < 4) {
+            val newSign = Language.getLetter(userSkill.unlockedSignsCount)
+            userSkill.unlockSign(newSign)
             _screens.add(NewSignFragment.newInstance(newSign))
         }
 

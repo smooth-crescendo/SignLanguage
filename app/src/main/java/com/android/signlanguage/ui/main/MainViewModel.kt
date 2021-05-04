@@ -13,7 +13,7 @@ class MainViewModel(val userSkill: UserSkill) : ViewModel() {
     }
 
     fun resetProgress() {
-        userSkill.unlockedSigns.clear()
+        userSkill.reset()
         progressReset?.invoke()
     }
 }
