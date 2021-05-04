@@ -71,7 +71,9 @@ class LessonViewModel(
         }
 
         for (i in 0 until 8) {
-            val filteredExercises = filterExercises()
+            val filteredExercises = filterExercises().toMutableList()
+            if (_screens.isNotEmpty() && EXERCISES.contains(_screens.last::class.java))
+                filteredExercises -= _screens.last::class.java
             val newExercise = filteredExercises.random()
             // FOR TEST PURPOSES
             // val newExercise = LetterSignExerciseFragment::class.java
