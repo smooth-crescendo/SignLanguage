@@ -13,8 +13,8 @@ class LetterSignExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
         private const val POSSIBLE_ANSWERS = 2
     }
 
-    private val _finished = MutableLiveData(false)
-    override val finished: LiveData<Boolean> = _finished
+    private val _finished = MutableLiveData<Boolean?>()
+    override val finished: LiveData<Boolean?> = _finished
 
     private val _rightAnswerIndex: Int
 
@@ -47,8 +47,7 @@ class LetterSignExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
 
     fun answer(signIndex: Int) {
         Log.d(TAG, "answer: ")
-        if (signIndex == _rightAnswerIndex)
-            _finished.value = true
+        _finished.value = signIndex == _rightAnswerIndex
     }
 }
 

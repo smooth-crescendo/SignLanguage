@@ -13,11 +13,13 @@ import com.android.signlanguage.model.ml.SignDetectionModelLoader
 import com.android.signlanguage.databinding.FragmentLetterCameraExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.ui.lesson.Exercise
+import com.android.signlanguage.ui.lesson.ExerciseRules
 import com.google.mediapipe.components.PermissionHelper
 import com.google.mediapipe.framework.AndroidAssetUtil
 
-class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
-    companion object : Exercise {
+class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
+
+    companion object : ExerciseRules {
         private const val TAG = "LetterCameraExerciseFragment"
 
         override val unlockedSignsRequired: Int = 1
@@ -39,13 +41,16 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener {
     private lateinit var _previewDisplayView: SurfaceView
     private var _handTrackingModel = HandTrackingModel()
 
+    override val sign: Char
+        get() = requireArguments().getChar(SIGN_BUNDLE)
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val binding = FragmentLetterCameraExerciseBinding.inflate(inflater, container, false)
 
-        val factory = LetterCameraExerciseViewModelFactory(requireArguments().getChar(SIGN_BUNDLE))
+        val factory = LetterCameraExerciseViewModelFactory(sign)
         _viewModel = ViewModelProvider(this, factory).get(LetterCameraExerciseViewModel::class.java)
         _viewModel.signDetectionModel =
             SignDetectionModelLoader().load(requireActivity().assets, "model.tflite")

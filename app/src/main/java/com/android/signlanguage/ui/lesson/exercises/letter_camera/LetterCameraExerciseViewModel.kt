@@ -17,8 +17,8 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
 
     lateinit var signDetectionModel: Interpreter
 
-    private val _finished = MutableLiveData(false)
-    override val finished: LiveData<Boolean> = _finished
+    private val _finished = MutableLiveData<Boolean?>()
+    override val finished: LiveData<Boolean?> = _finished
 
     private val _rightAnswer = MutableLiveData<Char>()
     val rightAnswer = Transformations.map(_rightAnswer) { it.toString() }
@@ -41,7 +41,7 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
 
     init {
         _continuousSignDetector.rightSignDetected = {
-            if (finished.value == false) {
+            if (finished.value == null) {
                 viewModelScope.launch {
                     _finished.value = true
                 }

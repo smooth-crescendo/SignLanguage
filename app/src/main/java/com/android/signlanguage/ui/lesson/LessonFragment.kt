@@ -1,10 +1,8 @@
 package com.android.signlanguage.ui.lesson
 
-import android.app.Application
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -45,7 +43,7 @@ class LessonFragment : Fragment() {
         }
 
         _viewModel.finished.observe(viewLifecycleOwner) {
-            if (it) {
+            if (it != null) {
                 findNavController().navigateUp()
                 UserSkill.save(requireContext())
             }
@@ -75,9 +73,9 @@ class LessonFragment : Fragment() {
         screenToShow.viewModelInitialized = { vm ->
             if (vm is FinishedListener) {
                 vm.finished.observeForever {
-                    if (it) {
+                    if (it != null) {
                         Log.d(TAG, "showScreen: vmFinished")
-                        _viewModel.startNextScreen()
+                        _viewModel.startNextScreen(!it)
                     }
                 }
             } else throw ClassCastException("view model must implement FinishedListener")

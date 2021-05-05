@@ -24,24 +24,12 @@ class LessonViewModel(
     companion object {
         private const val TAG = "LessonViewModel"
 
-        private val EXERCISES = arrayListOf(
-            LetterSignExerciseFragment::class.java,
-            SignLetterExerciseFragment::class.java,
-            LetterCameraExerciseFragment::class.java
-        )
-
-        fun getExerciseCompanion(exercise: Class<out Any>): Exercise {
-            return when (exercise) {
-                LetterSignExerciseFragment::class.java -> LetterSignExerciseFragment
-                SignLetterExerciseFragment::class.java -> SignLetterExerciseFragment
-                LetterCameraExerciseFragment::class.java -> LetterCameraExerciseFragment
-                else -> throw Exception("Unknown exercise fragment class")
-            }
-        }
+        const val MIN_SIGNS_FOR_LEARNING = 2
+        const val EXERCISES_IN_LESSON = 10
 
         fun filterExercises(): List<Class<out Any>> {
-            return EXERCISES.filter {
-                val exercise = getExerciseCompanion(it)
+            return ExerciseConverter.exercises.filter {
+                val exercise = ExerciseConverter.extractRules(it)
                 UserSkill.requireInstance().unlockedSignsCount >= exercise.unlockedSignsRequired
             }
         }
@@ -50,82 +38,101 @@ class LessonViewModel(
     private var _currentScreen = MutableLiveData<Fragment>()
     val currentScreen: LiveData<Fragment> = _currentScreen
 
-    private val exercisesCount: Int
     private val _progress = MutableLiveData(0)
     val progress: LiveData<Int> = _progress
 
-    private val _finished = MutableLiveData(false)
-    override val finished: LiveData<Boolean> = _finished
+    private val _finished = MutableLiveData<Boolean?>()
+    override val finished: LiveData<Boolean?> = _finished
 
-    private val _screens = LinkedList<Fragment>()
+    private val _delayedScreens = LinkedList<Fragment>()
+
+    private var _doneExercises = 0
+    private var _doneExercisesSuccessfully = 0
 
     private val _userSkill = UserSkill.requireInstance()
 
     init {
         Log.d(TAG, "init: ")
 
-        while (_userSkill.unlockedSignsCount < 2) {
-            val newSign = Language.getLetter(_userSkill.unlockedSignsCount)
-            _userSkill.unlockSign(newSign)
-            _screens.add(NewSignFragment.newInstance(newSign))
-        }
-
-        for (i in 0 until 8) {
-            val filteredExercises = filterExercises().toMutableList()
-            if (_screens.isNotEmpty() && EXERCISES.contains(_screens.last::class.java))
-                filteredExercises -= _screens.last::class.java
-            val newExercise = filteredExercises.random()
-            // FOR TEST PURPOSES
-            // val newExercise = LetterSignExerciseFragment::class.java
-            val f = when (newExercise) {
-                LetterCameraExerciseFragment::class.java -> {
-                    val sign = _userSkill.getRandomUnlockedSign()
-                    LetterCameraExerciseFragment.newInstance(sign)
-                }
-                SignLetterExerciseFragment::class.java -> {
-                    val sign = _userSkill.getRandomUnlockedSign()
-                    SignLetterExerciseFragment.newInstance(sign)
-                }
-                LetterSignExerciseFragment::class.java -> {
-                    val sign = _userSkill.getRandomUnlockedSign()
-                    LetterSignExerciseFragment.newInstance(sign)
-                }
-                else -> newExercise.newInstance() as Fragment
-            }
-            _screens.add(f)
-        }
-
-        _screens.add(LessonFinishedFragment())
-
-        exercisesCount = countExercises()
-
         startNextScreen()
     }
 
-    fun startNextScreen() {
+    fun startNextScreen(prevExerciseFailed: Boolean = false) {
         Log.d(TAG, "startNextScreen: ")
-        val nextScreen = _screens.poll()
-        if (nextScreen == null) {
-            _finished.value = true
-        } else {
-            _currentScreen.value = nextScreen
-            currentScreenChanged?.invoke(nextScreen)
+
+        if (_currentScreen.value != null && ExerciseConverter.isExercise(_currentScreen.value!!::class.java)) {
+            _doneExercises++
+            if (!prevExerciseFailed)
+                _doneExercisesSuccessfully++
         }
+
+        if (prevExerciseFailed) {
+            _delayedScreens.add(currentScreen.value!!)
+        }
+
+        if (currentScreen.value != null && currentScreen.value!!::class.java == LessonFinishedFragment::class.java) {
+            _finished.value = true
+            return
+        }
+
+        val nextScreen = getNextExercise()
+
+        _currentScreen.value = nextScreen
+        currentScreenChanged?.invoke(nextScreen)
+
         _progress.value = calculateProgress()
-        Log.d(TAG, "startNextScreen: ${_progress.value}")
+    }
+
+    private fun getNextExercise(): Fragment {
+        if (_doneExercisesSuccessfully >= EXERCISES_IN_LESSON) {
+            return LessonFinishedFragment()
+        }
+
+        if (_userSkill.unlockedSignsCount < MIN_SIGNS_FOR_LEARNING) {
+            val newSign = Language.getLetter(_userSkill.unlockedSignsCount)
+            _userSkill.unlockSign(newSign)
+            return NewSignFragment.newInstance(newSign)
+        }
+
+        if (_doneExercises >= EXERCISES_IN_LESSON) {
+            val nextScreen = _delayedScreens.poll()
+            return nextScreen ?: LessonFinishedFragment()
+        }
+
+        val sign =
+            if (_currentScreen.value != null && _currentScreen.value!! is Exercise) {
+                _userSkill.getRandomUnlockedSignExcluding((_currentScreen.value as Exercise).sign)
+            } else {
+                _userSkill.getRandomUnlockedSign()
+            }
+
+        val filteredExercises = filterExercises()
+
+        return when (filteredExercises.random()) {
+            LetterCameraExerciseFragment::class.java -> {
+                LetterCameraExerciseFragment.newInstance(sign)
+            }
+            SignLetterExerciseFragment::class.java -> {
+                SignLetterExerciseFragment.newInstance(sign)
+            }
+            LetterSignExerciseFragment::class.java -> {
+                LetterSignExerciseFragment.newInstance(sign)
+            }
+            else -> throw NotImplementedError()
+        }
     }
 
     private fun calculateProgress() =
-        (100.0 - countExercises().toDouble() / exercisesCount.toDouble() * 100.0).toInt()
+        (_doneExercisesSuccessfully.toDouble() / EXERCISES_IN_LESSON.toDouble() * 100.0).toInt()
 
-    private fun countExercises(): Int {
-        var result = _screens.count { EXERCISES.contains(it.javaClass) }
-        currentScreen.value?.let {
-            if (EXERCISES.contains(it.javaClass))
-                result++
-        }
-        return result
-    }
+//    private fun countExercises(): Int {
+//        var result = _screens.count { EXERCISES.contains(it.javaClass) }
+//        currentScreen.value?.let {
+//            if (EXERCISES.contains(it.javaClass))
+//                result++
+//        }
+//        return result
+//    }
 }
 
 class LessonViewModelFactory(

@@ -10,10 +10,12 @@ import androidx.lifecycle.ViewModel
 import com.android.signlanguage.databinding.FragmentSignLetterExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.ui.lesson.Exercise
+import com.android.signlanguage.ui.lesson.ExerciseRules
+import com.android.signlanguage.ui.lesson.exercises.letter_camera.LetterCameraExerciseFragment
 
-class SignLetterExerciseFragment : Fragment(), ViewModelInitListener {
+class SignLetterExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
 
-    companion object: Exercise {
+    companion object: ExerciseRules {
         private const val TAG = "SignLetterExerciseFragment"
 
         override val unlockedSignsRequired: Int = 4
@@ -32,13 +34,16 @@ class SignLetterExerciseFragment : Fragment(), ViewModelInitListener {
     private lateinit var _viewModel: SignLetterExerciseViewModel
     override var viewModelInitialized: ((viewModel: ViewModel) -> Unit)? = null
 
+    override val sign: Char
+        get() = requireArguments().getChar(SIGN_BUNDLE)
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val binding = FragmentSignLetterExerciseBinding.inflate(inflater, container, false)
 
-        val factory = SignLetterExerciseViewModelFactory(requireArguments().getChar(SIGN_BUNDLE))
+        val factory = SignLetterExerciseViewModelFactory(sign)
         _viewModel = ViewModelProvider(this, factory).get(SignLetterExerciseViewModel::class.java)
         viewModelInitialized?.invoke(_viewModel)
 

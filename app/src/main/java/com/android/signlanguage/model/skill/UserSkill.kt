@@ -25,6 +25,10 @@ class UserSkill {
         return _unlockedSigns.random().sign
     }
 
+    fun getRandomUnlockedSignExcluding(sign: Char): Char {
+        return _unlockedSigns.minus(_unlockedSigns.find { it.sign == sign }!!).random().sign
+    }
+
     companion object {
         private const val FILENAME = "user_skill"
 
