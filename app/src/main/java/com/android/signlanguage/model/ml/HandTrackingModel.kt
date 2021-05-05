@@ -137,8 +137,10 @@ class HandTrackingModel {
     }
 
     fun close() {
-        _converter.close()
+        _converter.removeConsumer(_processor)
         _previewDisplayView.visibility = View.GONE
+        _converter.close()
+        _processor.close()
     }
 
     private fun handsCallback(packet: Packet) {

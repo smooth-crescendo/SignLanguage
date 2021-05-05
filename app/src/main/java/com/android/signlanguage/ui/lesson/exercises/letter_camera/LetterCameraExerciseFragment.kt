@@ -98,6 +98,7 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
     override fun onPause() {
         super.onPause()
         _handTrackingModel.close()
+        _viewModel.signDetectionModel.close()
     }
 
     override fun onRequestPermissionsResult(
