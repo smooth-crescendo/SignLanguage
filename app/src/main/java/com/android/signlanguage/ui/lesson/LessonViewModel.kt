@@ -58,12 +58,15 @@ class LessonViewModel(
     }
 
     fun startNextScreen(prevExerciseFailed: Boolean = false) {
-        Log.d(TAG, "startNextScreen: ")
 
-        if (_currentScreen.value != null && ExerciseConverter.isExercise(_currentScreen.value!!::class.java)) {
+        if (_currentScreen.value != null && _currentScreen.value!! is Exercise) {
             _doneExercises++
-            if (!prevExerciseFailed)
+            if (!prevExerciseFailed) {
                 _doneExercisesSuccessfully++
+                _userSkill.upgrade((_currentScreen.value as Exercise).sign)
+            }
+
+            Log.d(TAG, "startNextScreen: Skill: $_userSkill")
         }
 
         if (prevExerciseFailed) {
@@ -89,6 +92,13 @@ class LessonViewModel(
         }
 
         if (_userSkill.unlockedSignsCount < MIN_SIGNS_FOR_LEARNING) {
+            val newSign = Language.getLetter(_userSkill.unlockedSignsCount)
+            _userSkill.unlockSign(newSign)
+            return NewSignFragment.newInstance(newSign)
+        }
+
+        if (_doneExercises < EXERCISES_IN_LESSON * 0.6
+            && _userSkill.isNewSignReady()) {
             val newSign = Language.getLetter(_userSkill.unlockedSignsCount)
             _userSkill.unlockSign(newSign)
             return NewSignFragment.newInstance(newSign)

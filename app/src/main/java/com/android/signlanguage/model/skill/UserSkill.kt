@@ -8,28 +8,9 @@ import java.io.File
 import kotlin.random.Random
 
 class UserSkill {
-    private val _unlockedSigns: MutableList<SignSkill> = mutableListOf()
-    val unlockedSignsCount
-        get() = _unlockedSigns.size
-
-    fun unlockSign(sign: Char, skill: Double = 0.0) {
-        if (!_unlockedSigns.contains(sign))
-            _unlockedSigns += SignSkill(sign, skill)
-    }
-
-    fun reset() {
-        _unlockedSigns.clear()
-    }
-
-    fun getRandomUnlockedSign(): Char {
-        return _unlockedSigns.random().sign
-    }
-
-    fun getRandomUnlockedSignExcluding(sign: Char): Char {
-        return _unlockedSigns.minus(_unlockedSigns.find { it.sign == sign }!!).random().sign
-    }
 
     companion object {
+
         private const val FILENAME = "user_skill"
 
         private var instance: UserSkill? = null
@@ -82,5 +63,49 @@ class UserSkill {
             val content = jsonAdapter.toJson(getInstance(context))
             file.writeText(content)
         }
+    }
+
+    private val _unlockedSigns: MutableList<SignSkill> = mutableListOf()
+    val unlockedSignsCount
+        get() = _unlockedSigns.size
+
+    fun unlockSign(sign: Char, step: Int = 0) {
+        if (!_unlockedSigns.contains(sign))
+            _unlockedSigns += SignSkill(sign)
+    }
+
+    fun reset() {
+        _unlockedSigns.clear()
+    }
+
+    fun getRandomUnlockedSign(): Char {
+        return _unlockedSigns.random().sign
+    }
+
+    fun getRandomUnlockedSignExcluding(sign: Char): Char {
+        return _unlockedSigns.minus(_unlockedSigns.find { it.sign == sign }!!).random().sign
+    }
+
+    /**
+     * Is current skill enough to learn new sign
+     */
+    fun isNewSignReady(): Boolean {
+        fun percentage(v: Int): Double = v.toDouble() / _unlockedSigns.size
+
+        val lowLearnedSigns = _unlockedSigns.count { it.skill < 0.4 }
+        val highLearnedSigns = _unlockedSigns.count { it.skill > 0.8 }
+        val mediumLearnedSigns = unlockedSignsCount - lowLearnedSigns - highLearnedSigns
+
+        return (unlockedSignsCount < Language.maxLetters && lowLearnedSigns < 2)
+    }
+
+    fun upgrade(sign: Char) {
+        _unlockedSigns.find { it.sign == sign }?.let {
+            it.step++
+        }
+    }
+
+    override fun toString(): String {
+        return _unlockedSigns.joinToString { "${it.sign} - ${it.skill} (${it.step})" }
     }
 }
