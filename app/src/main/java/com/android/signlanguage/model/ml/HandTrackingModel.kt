@@ -136,13 +136,6 @@ class HandTrackingModel {
         }
     }
 
-    fun close() {
-        _converter.removeConsumer(_processor)
-        _previewDisplayView.visibility = View.GONE
-        _converter.close()
-        _processor.close()
-    }
-
     private fun handsCallback(packet: Packet) {
         val multiHandLandmarks =
             PacketGetter.getProtoVector(
@@ -189,5 +182,15 @@ class HandTrackingModel {
      */
     fun addCallback(callback: (Array<Array<FloatArray>>) -> Unit) {
         _handTrackingCallback = callback
+    }
+
+    fun closeConverter() {
+        _previewDisplayView.visibility = View.GONE
+        _converter.close()
+    }
+
+    fun close() {
+        _converter.removeConsumer(_processor)
+        _processor.close()
     }
 }

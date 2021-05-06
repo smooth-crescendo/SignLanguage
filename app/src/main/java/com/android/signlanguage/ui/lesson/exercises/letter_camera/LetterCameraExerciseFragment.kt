@@ -39,10 +39,15 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
     override var viewModelInitialized: ((viewModel: ViewModel) -> Unit)? = null
 
     private lateinit var _previewDisplayView: SurfaceView
-    private var _handTrackingModel = HandTrackingModel()
+    private var _handTrackingModel: HandTrackingModel? = null
 
     override val sign: Char
         get() = requireArguments().getChar(SIGN_BUNDLE)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        _handTrackingModel = HandTrackingModel()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,10 +67,10 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
         _previewDisplayView = SurfaceView(context)
         _previewDisplayView.alpha = 1f
         binding.viewGroup.addView(_previewDisplayView, 0)
-        _handTrackingModel.setupPreviewDisplayView(_previewDisplayView)
+        _handTrackingModel!!.setupPreviewDisplayView(_previewDisplayView)
         AndroidAssetUtil.initializeNativeAssetManager(context)
-        _handTrackingModel.initializeProcessor(context)
-        _handTrackingModel.addCallback {
+        _handTrackingModel!!.initializeProcessor(context)
+        _handTrackingModel!!.addCallback {
             _viewModel.handsCallback(it)
         }
 
@@ -74,7 +79,7 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
                 _viewModel.isLoading.value = true
         }
 
-        _handTrackingModel.isCameraLoaded.observe(viewLifecycleOwner) {
+        _handTrackingModel!!.isCameraLoaded.observe(viewLifecycleOwner) {
             if (_viewModel.isCameraAccessible.value == true)
                 _viewModel.isLoading.value = !it
         }
@@ -89,15 +94,24 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
 
     override fun onResume() {
         super.onResume()
-        _handTrackingModel.initializeConverter()
+        _handTrackingModel!!.initializeConverter()
         if (PermissionHelper.cameraPermissionsGranted(activity)) {
-            _handTrackingModel.startCamera(requireActivity())
+            _handTrackingModel!!.startCamera(requireActivity())
         }
     }
 
     override fun onPause() {
         super.onPause()
-        _handTrackingModel.close()
+        _handTrackingModel!!.closeConverter()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _handTrackingModel!!.close()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
         _viewModel.signDetectionModel.close()
     }
 

@@ -58,7 +58,6 @@ class LessonViewModel(
     }
 
     fun startNextScreen(prevExerciseFailed: Boolean = false) {
-
         if (_currentScreen.value != null && _currentScreen.value!! is Exercise) {
             _doneExercises++
             if (!prevExerciseFailed) {
@@ -134,15 +133,6 @@ class LessonViewModel(
 
     private fun calculateProgress() =
         (_doneExercisesSuccessfully.toDouble() / EXERCISES_IN_LESSON.toDouble() * 100.0).toInt()
-
-//    private fun countExercises(): Int {
-//        var result = _screens.count { EXERCISES.contains(it.javaClass) }
-//        currentScreen.value?.let {
-//            if (EXERCISES.contains(it.javaClass))
-//                result++
-//        }
-//        return result
-//    }
 }
 
 class LessonViewModelFactory(
