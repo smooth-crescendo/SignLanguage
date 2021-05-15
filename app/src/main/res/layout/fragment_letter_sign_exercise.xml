@@ -53,6 +53,7 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <ImageButton
+                android:id="@+id/answer1"
                 sign="@{viewModel.possibleAnswer1}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -64,6 +65,7 @@
                 tools:src="@drawable/letter_a" />
 
             <ImageButton
+                android:id="@+id/answer2"
                 sign="@{viewModel.possibleAnswer2}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

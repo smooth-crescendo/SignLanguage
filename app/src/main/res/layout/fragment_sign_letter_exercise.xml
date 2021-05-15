@@ -50,6 +50,7 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <Button
+                android:id="@+id/answer1"
                 style="@style/answer_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -60,6 +61,7 @@
                 tools:text="A" />
 
             <Button
+                android:id="@+id/answer2"
                 style="@style/answer_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -70,6 +72,7 @@
                 tools:text="B" />
 
             <Button
+                android:id="@+id/answer3"
                 style="@style/answer_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -80,6 +83,7 @@
                 tools:text="C" />
 
             <Button
+                android:id="@+id/answer4"
                 style="@style/answer_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

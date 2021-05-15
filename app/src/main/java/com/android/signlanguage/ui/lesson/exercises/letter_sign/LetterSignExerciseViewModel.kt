@@ -5,6 +5,9 @@ import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.model.Language
 import com.android.signlanguage.model.skill.UserSkill
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class LetterSignExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
@@ -45,10 +48,21 @@ class LetterSignExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
         it.toString()
     }
 
+    var isAnswerBlocked = false
+
     fun answer(signIndex: Int) {
         Log.d(TAG, "answer: ")
-        _finished.value = signIndex == _rightAnswerIndex
+        if (!isAnswerBlocked) {
+            isAnswerBlocked = true
+            showAnswerResults?.invoke(_rightAnswerIndex, signIndex)
+            GlobalScope.launch {
+                delay(if (signIndex == _rightAnswerIndex) 750 else 1250)
+                _finished.postValue(signIndex == _rightAnswerIndex)
+            }
+        }
     }
+
+    var showAnswerResults: ((rightAnswer: Int, answer: Int) -> Unit)? = null
 }
 
 class LetterSignExerciseViewModelFactory(val sign: Char) : ViewModelProvider.Factory {

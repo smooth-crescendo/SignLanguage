@@ -7,4 +7,6 @@
     <color name="black200">#FF212121</color>
     <color name="black300">#FF303030</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="green">#ff65C157</color>
+    <color name="red">#FFE34747</color>
 </resources>
