@@ -17,4 +17,8 @@
             android:id="@+id/action_mainFragment_to_lessonFragment"
             app:destination="@id/lessonFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/modelTestDataFormationFragment"
+        android:name="com.android.signlanguage.ui.ModelTrainingDataFormationFragment"
+        android:label="ModelTestDataFormationFragment" />
 </navigation>
