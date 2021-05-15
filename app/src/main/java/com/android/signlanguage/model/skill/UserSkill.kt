@@ -79,11 +79,23 @@ class UserSkill {
     }
 
     fun getRandomUnlockedSign(): Char {
-        return _unlockedSigns.random().sign
+        return generateWithProbabilities(_unlockedSigns).random()
     }
 
     fun getRandomUnlockedSignExcluding(sign: Char): Char {
-        return _unlockedSigns.minus(_unlockedSigns.find { it.sign == sign }!!).random().sign
+        return generateWithProbabilities(_unlockedSigns.minus(_unlockedSigns.find { it.sign == sign }!!)).random()
+    }
+
+    private fun generateWithProbabilities(unlockedSigns: List<SignSkill>): MutableList<Char> {
+        val result = mutableListOf<Char>()
+        for (signSkill in unlockedSigns) {
+            when {
+                signSkill.skill < 0.4 -> result.addAll(MutableList(5) { signSkill.sign })
+                signSkill.skill < 0.8 -> result.addAll(MutableList(2) { signSkill.sign })
+                else -> result.add(signSkill.sign)
+            }
+        }
+        return result
     }
 
     /**
