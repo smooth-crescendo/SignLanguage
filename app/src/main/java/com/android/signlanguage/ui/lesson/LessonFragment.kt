@@ -16,11 +16,6 @@ class LessonFragment : Fragment() {
 
     companion object {
         private const val TAG = "LessonFragment"
-
-        init {
-            System.loadLibrary("mediapipe_jni")
-            System.loadLibrary("opencv_java3")
-        }
     }
 
     private lateinit var _viewModel: LessonViewModel
