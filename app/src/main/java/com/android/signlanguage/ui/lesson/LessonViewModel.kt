@@ -105,7 +105,29 @@ class LessonViewModel(
 
         if (_doneExercises >= EXERCISES_IN_LESSON) {
             val nextScreen = _delayedScreens.poll()
-            return nextScreen ?: LessonFinishedFragment()
+
+            if (nextScreen == null)
+                return LessonFinishedFragment()
+            else {
+                if (_delayedScreens.isEmpty()) {
+                    val sign = (nextScreen as Exercise).sign
+
+                    return when (nextScreen::class.java) {
+                        LetterCameraExerciseFragment::class.java -> {
+                            SignLetterExerciseFragment.newInstance(sign)
+                        }
+                        SignLetterExerciseFragment::class.java -> {
+                            SignLetterExerciseFragment.newInstance(sign)
+                        }
+                        LetterSignExerciseFragment::class.java -> {
+                            LetterSignExerciseFragment.newInstance(sign)
+                        }
+                        else -> throw NotImplementedError()
+                    }
+                } else {
+                    return nextScreen
+                }
+            }
         }
 
         val sign =
@@ -119,7 +141,7 @@ class LessonViewModel(
 
         return when (filteredExercises.random()) {
             LetterCameraExerciseFragment::class.java -> {
-                LetterCameraExerciseFragment.newInstance(sign)
+                SignLetterExerciseFragment.newInstance(sign)
             }
             SignLetterExerciseFragment::class.java -> {
                 SignLetterExerciseFragment.newInstance(sign)
