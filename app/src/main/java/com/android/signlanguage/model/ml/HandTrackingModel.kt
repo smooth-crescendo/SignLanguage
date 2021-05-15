@@ -161,6 +161,8 @@ class HandTrackingModel {
         alignAxisLandmarks(input, 1)
         alignAxisLandmarks(input, 2)
 
+        normalizePoints(input)
+
         return input
     }
 
@@ -174,6 +176,21 @@ class HandTrackingModel {
         }
         for (i in 0..20) {
             src[0][i][ax] -= min
+        }
+    }
+
+    private fun normalizePoints(src: Array<Array<FloatArray>>) {
+        var max = -100f
+        for (point in src[0]) {
+            for (ax in point) {
+                if (ax > max)
+                    max = ax
+            }
+        }
+        for (point in src[0]) {
+            point[0] /= max
+            point[1] /= max
+            point[2] /= max
         }
     }
 

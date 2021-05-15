@@ -1,8 +1,10 @@
 package com.android.signlanguage.ui.lesson.exercises.letter_camera
 
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener
+import com.android.signlanguage.model.Language
 import com.android.signlanguage.ui.lesson.LessonFragment
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
@@ -50,11 +52,11 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
     }
 
     fun handsCallback(input: Array<Array<FloatArray>>) {
-        val output = Array(1) { FloatArray(5) }
+        val output = Array(1) { FloatArray(Language.maxLetters) }
         signDetectionModel.run(input, output)
 
         var predictedSignIndex = 0
-        for (j in 0..4) {
+        for (j in 0 until Language.maxLetters) {
             if (output[0][j] > output[0][predictedSignIndex])
                 predictedSignIndex = j
         }
@@ -64,6 +66,8 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
             predictedSign == _rightAnswer.value,
             System.currentTimeMillis()
         )
+
+        Log.d(TAG, "handsCallback: $predictedSign")
     }
 }
 
