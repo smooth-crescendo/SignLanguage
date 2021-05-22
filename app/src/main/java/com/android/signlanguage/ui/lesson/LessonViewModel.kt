@@ -141,7 +141,8 @@ class LessonViewModel(
 
         return when (filteredExercises.random()) {
             LetterCameraExerciseFragment::class.java -> {
-                SignLetterExerciseFragment.newInstance(sign)
+                LetterSignExerciseFragment.newInstance(sign)
+                // LetterCameraExerciseFragment.newInstance(sign)
             }
             SignLetterExerciseFragment::class.java -> {
                 SignLetterExerciseFragment.newInstance(sign)
