@@ -8,21 +8,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageButton
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModel
 import com.android.signlanguage.R
 import com.android.signlanguage.databinding.FragmentSignLetterExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
-import com.android.signlanguage.ui.lesson.Exercise
+import com.android.signlanguage.ui.lesson.SignContainer
 import com.android.signlanguage.ui.lesson.ExerciseRules
-import com.android.signlanguage.ui.lesson.exercises.letter_camera.LetterCameraExerciseFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class SignLetterExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
+class SignLetterExerciseFragment : Fragment(), ViewModelInitListener, SignContainer {
 
     companion object : ExerciseRules {
         private const val TAG = "SignLetterExerciseFragment"

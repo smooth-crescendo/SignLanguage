@@ -12,12 +12,12 @@ import com.android.signlanguage.model.ml.HandTrackingModel
 import com.android.signlanguage.model.ml.SignDetectionModelLoader
 import com.android.signlanguage.databinding.FragmentLetterCameraExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
-import com.android.signlanguage.ui.lesson.Exercise
+import com.android.signlanguage.ui.lesson.SignContainer
 import com.android.signlanguage.ui.lesson.ExerciseRules
 import com.google.mediapipe.components.PermissionHelper
 import com.google.mediapipe.framework.AndroidAssetUtil
 
-class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
+class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, SignContainer {
 
     companion object : ExerciseRules {
         private const val TAG = "LetterCameraExerciseFragment"
