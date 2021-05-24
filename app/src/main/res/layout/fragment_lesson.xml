@@ -16,18 +16,29 @@
         android:background="?attr/colorSurface"
         tools:context=".ui.lesson.LessonFragment">
 
-        <ProgressBar
-            android:id="@+id/progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/top_bar"
             android:layout_width="match_parent"
             android:layout_height="80dp"
             android:layout_margin="16dp"
-            android:gravity="center"
-            android:max="100"
-            android:progress="@{viewModel.progress}"
-            android:text="lesson progress"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_height="16dp"
+                android:layout_width="0dp"
+                android:gravity="center"
+                android:max="100"
+                android:progress="@{viewModel.progress}"
+                android:progressDrawable="@drawable/lesson_progress_bar"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/exercise_fragment_container"
@@ -36,6 +47,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/progress" />
+            app:layout_constraintTop_toBottomOf="@+id/top_bar" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
