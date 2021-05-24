@@ -2,10 +2,7 @@ package com.android.signlanguage.ui.lesson
 
 import android.util.Log
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.model.Language
 import com.android.signlanguage.model.skill.UserSkill
@@ -40,16 +37,17 @@ class LessonViewModel(
     private var _currentScreen = MutableLiveData<Fragment>()
     val currentScreen: LiveData<Fragment> = _currentScreen
 
-    private val _progress = MutableLiveData(0)
-    val progress: LiveData<Int> = _progress
-
     private val _finished = MutableLiveData<Boolean?>()
     override val finished: LiveData<Boolean?> = _finished
 
     private val _delayedScreens = LinkedList<Fragment>()
 
     private var _doneExercises = 0
-    private var _doneExercisesSuccessfully = 0
+    private val _doneExercisesSuccessfully = MutableLiveData(0)
+
+    val progress: LiveData<Int> = Transformations.map(_doneExercisesSuccessfully) {
+        (_doneExercisesSuccessfully.value!!.toDouble() / EXERCISES_IN_LESSON.toDouble() * 100.0).toInt()
+    }
 
     private val _userSkill = UserSkill.requireInstance()
 
@@ -63,7 +61,7 @@ class LessonViewModel(
         if (_currentScreen.value != null && _currentScreen.value!! is Exercise) {
             _doneExercises++
             if (!prevExerciseFailed) {
-                _doneExercisesSuccessfully++
+                _doneExercisesSuccessfully.value = _doneExercisesSuccessfully.value!! + 1
                 _userSkill.upgrade((_currentScreen.value as Exercise).sign)
             }
 
@@ -83,12 +81,10 @@ class LessonViewModel(
 
         _currentScreen.value = nextScreen
         currentScreenChanged?.invoke(nextScreen)
-
-        _progress.value = calculateProgress()
     }
 
     private fun getNextExercise(): Fragment {
-        if (_doneExercisesSuccessfully >= EXERCISES_IN_LESSON) {
+        if (_doneExercisesSuccessfully.value!! >= EXERCISES_IN_LESSON) {
             return LessonFinishedFragment()
         }
 
@@ -157,9 +153,6 @@ class LessonViewModel(
 
         return instantiateExerciseFragment(filteredExercises.random(), sign)
     }
-
-    private fun calculateProgress() =
-        (_doneExercisesSuccessfully.toDouble() / EXERCISES_IN_LESSON.toDouble() * 100.0).toInt()
 
     private fun extractSign(exerciseFragment: Fragment) = (exerciseFragment as Exercise).sign
 }
