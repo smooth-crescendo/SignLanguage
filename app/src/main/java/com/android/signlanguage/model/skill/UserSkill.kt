@@ -90,7 +90,7 @@ class UserSkill {
         val result = mutableListOf<Char>()
         for (signSkill in unlockedSigns) {
             when {
-                signSkill.skill < 0.4 -> result.addAll(MutableList(5) { signSkill.sign })
+                signSkill.skill < 0.4 -> result.addAll(MutableList(4) { signSkill.sign })
                 signSkill.skill < 0.8 -> result.addAll(MutableList(2) { signSkill.sign })
                 else -> result.add(signSkill.sign)
             }
