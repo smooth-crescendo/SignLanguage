@@ -1,5 +1,5 @@
 package com.android.signlanguage.ui.lesson
 
-interface SignContainer {
+interface Exercise {
     val sign: Char
 }

@@ -13,14 +13,14 @@ import androidx.lifecycle.ViewModel
 import com.android.signlanguage.R
 import com.android.signlanguage.databinding.FragmentSignLetterExerciseBinding
 import com.android.signlanguage.ViewModelInitListener
-import com.android.signlanguage.ui.lesson.SignContainer
+import com.android.signlanguage.ui.lesson.Exercise
 import com.android.signlanguage.ui.lesson.ExerciseRules
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class SignLetterExerciseFragment : Fragment(), ViewModelInitListener, SignContainer {
+class SignLetterExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
 
     companion object : ExerciseRules {
         private const val TAG = "SignLetterExerciseFragment"

@@ -9,9 +9,9 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModel
 import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.databinding.FragmentNewSignBinding
-import com.android.signlanguage.ui.lesson.SignContainer
+import com.android.signlanguage.ui.lesson.Exercise
 
-class NewSignFragment : Fragment(), ViewModelInitListener, SignContainer {
+class NewSignFragment : Fragment(), ViewModelInitListener {
 
     companion object {
         private const val TAG = "NewSignFragment"
@@ -28,7 +28,7 @@ class NewSignFragment : Fragment(), ViewModelInitListener, SignContainer {
         }
     }
 
-    override val sign: Char
+    val sign: Char
         get() = requireArguments().getChar(SIGN_BUNDLE)
 
     override var viewModelInitialized: ((viewModel: ViewModel) -> Unit)? = null

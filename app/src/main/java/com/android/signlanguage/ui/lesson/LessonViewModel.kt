@@ -60,11 +60,11 @@ class LessonViewModel(
     }
 
     fun startNextScreen(prevExerciseFailed: Boolean = false) {
-        if (_currentScreen.value != null && _currentScreen.value!! is SignContainer) {
+        if (_currentScreen.value != null && _currentScreen.value!! is Exercise) {
             _doneExercises++
             if (!prevExerciseFailed) {
                 _doneExercisesSuccessfully++
-                _userSkill.upgrade((_currentScreen.value as SignContainer).sign)
+                _userSkill.upgrade((_currentScreen.value as Exercise).sign)
             }
 
             Log.d(TAG, "startNextScreen: Skill: $_userSkill")
@@ -93,7 +93,8 @@ class LessonViewModel(
         }
 
         if (currentScreen.value != null && currentScreen.value!!::class.java == NewSignFragment::class.java) {
-            return LetterCameraExerciseFragment.newInstance(extractSign(currentScreen.value!!))
+            val sign = (currentScreen.value!! as NewSignFragment).sign
+            return LetterCameraExerciseFragment.newInstance(sign)
         }
 
         if (_userSkill.unlockedSignsCount < MIN_SIGNS_FOR_LEARNING
@@ -146,8 +147,8 @@ class LessonViewModel(
 
     private fun getRandomExercise(): Fragment {
         val sign =
-            if (_currentScreen.value != null && _currentScreen.value!! is SignContainer) {
-                _userSkill.getRandomUnlockedSignExcluding((_currentScreen.value as SignContainer).sign)
+            if (_currentScreen.value != null && _currentScreen.value!! is Exercise) {
+                _userSkill.getRandomUnlockedSignExcluding((_currentScreen.value as Exercise).sign)
             } else {
                 _userSkill.getRandomUnlockedSign()
             }
@@ -160,7 +161,7 @@ class LessonViewModel(
     private fun calculateProgress() =
         (_doneExercisesSuccessfully.toDouble() / EXERCISES_IN_LESSON.toDouble() * 100.0).toInt()
 
-    private fun extractSign(fragment: Fragment) = (fragment as SignContainer).sign
+    private fun extractSign(exerciseFragment: Fragment) = (exerciseFragment as Exercise).sign
 }
 
 class LessonViewModelFactory(
