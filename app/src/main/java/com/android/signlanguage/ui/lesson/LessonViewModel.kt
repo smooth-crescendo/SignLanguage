@@ -48,6 +48,8 @@ class LessonViewModel(
     private var _doneExercises = 0
     private val _doneExercisesSuccessfully = MutableLiveData(0)
 
+    var exitPrompted: (() -> Unit)? = null
+
     val progress: LiveData<Int> = Transformations.map(_doneExercisesSuccessfully) {
         (it.toDouble() / EXERCISES_IN_LESSON.toDouble() * 100.0).toInt()
     }
@@ -62,8 +64,12 @@ class LessonViewModel(
 
     }
 
-    fun exitLesson() {
+    fun promptExit() {
+        exitPrompted?.invoke()
+    }
 
+    fun finish() {
+        _finished.value = false
     }
 
     fun startNextScreen(prevExerciseFailed: Boolean = false) {

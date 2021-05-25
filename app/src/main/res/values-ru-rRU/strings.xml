@@ -6,4 +6,8 @@
     <string name="sign_letter_task">Какой это жест?</string>
     <string name="continue_button">Продолжить</string>
     <string name="new_sign_message">Новый жест!</string>
+    <string name="lesson_exit_confirmation">Вы уверены, что хотите выйти из урока? Весь прогресс будет утерян.</string>
+    <string name="cancel">Отмена</string>
+    <string name="exit">Выйти</string>
+
 </resources>

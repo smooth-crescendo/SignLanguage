@@ -1,7 +1,6 @@
 package com.android.signlanguage.ui.lesson
 
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -10,9 +9,9 @@ import androidx.navigation.fragment.findNavController
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.R
 import com.android.signlanguage.ViewModelInitListener
-import com.android.signlanguage.bindSignImage
 import com.android.signlanguage.databinding.FragmentLessonBinding
 import com.android.signlanguage.model.skill.UserSkill
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -40,14 +39,27 @@ class LessonFragment : Fragment() {
         _binding.lifecycleOwner = this
         _binding.viewModel = _viewModel
 
+        _viewModel.exitPrompted = {
+            MaterialAlertDialogBuilder(requireContext())
+                .setMessage(getString(R.string.lesson_exit_confirmation))
+                .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+                    // nothing
+                }
+                .setPositiveButton(getString(R.string.exit)) { _, _ ->
+                    _viewModel.finish()
+                }
+                .show()
+        }
+
         _viewModel.currentScreenChanged = {
             onCurrentScreenChanged(it)
         }
 
         _viewModel.finished.observe(viewLifecycleOwner) {
             if (it != null) {
+                if (it == true)
+                    UserSkill.save(requireContext())
                 findNavController().navigateUp()
-                UserSkill.save(requireContext())
             }
         }
 
