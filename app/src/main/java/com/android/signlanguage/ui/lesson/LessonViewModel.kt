@@ -57,6 +57,14 @@ class LessonViewModel(
         startNextScreen()
     }
 
+    fun openHelpWindow() {
+
+    }
+
+    fun exitLesson() {
+
+    }
+
     fun startNextScreen(prevExerciseFailed: Boolean = false) {
         if (_currentScreen.value != null && _currentScreen.value!! is Exercise) {
             _doneExercises++
