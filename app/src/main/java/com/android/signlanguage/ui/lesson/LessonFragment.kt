@@ -1,6 +1,7 @@
 package com.android.signlanguage.ui.lesson
 
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -9,8 +10,11 @@ import androidx.navigation.fragment.findNavController
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.R
 import com.android.signlanguage.ViewModelInitListener
+import com.android.signlanguage.bindSignImage
 import com.android.signlanguage.databinding.FragmentLessonBinding
 import com.android.signlanguage.model.skill.UserSkill
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class LessonFragment : Fragment() {
 
@@ -19,20 +23,23 @@ class LessonFragment : Fragment() {
     }
 
     private lateinit var _viewModel: LessonViewModel
+    private lateinit var _binding: FragmentLessonBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Log.d(TAG, "onCreateView: ${hashCode()}")
-
         UserSkill.getInstance(requireContext())
 
-        val binding = FragmentLessonBinding.inflate(inflater, container, false)
+        _binding = FragmentLessonBinding.inflate(inflater, container, false)
 
         val factory = LessonViewModelFactory { onCurrentScreenChanged(it) }
         _viewModel = ViewModelProvider(this, factory).get(LessonViewModel::class.java)
+
+        _binding.lifecycleOwner = this
+        _binding.viewModel = _viewModel
+
         _viewModel.currentScreenChanged = {
             onCurrentScreenChanged(it)
         }
@@ -44,10 +51,24 @@ class LessonFragment : Fragment() {
             }
         }
 
-        binding.lifecycleOwner = this
-        binding.viewModel = _viewModel
+        GlobalScope.launch {
+            _binding.progress.progress = 1
+            _binding.progress.progress = 0
+        }
 
-        return binding.root
+        return _binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        _viewModel.progress.value?.let {
+            GlobalScope.launch {
+                _binding.progress.progress = 1
+                _binding.progress.progress = 0
+                _binding.progress.progress = it
+            }
+        }
     }
 
     private fun onCurrentScreenChanged(screen: Fragment) {
@@ -55,8 +76,6 @@ class LessonFragment : Fragment() {
     }
 
     private fun showScreen(screenToShow: Fragment) {
-        Log.d(TAG, "showScreen: ${hashCode()}")
-
         if (screenToShow !is ViewModelInitListener)
             return
 
@@ -69,7 +88,7 @@ class LessonFragment : Fragment() {
             if (vm is FinishedListener) {
                 vm.finished.observeForever {
                     if (it != null) {
-                        Log.d(TAG, "showScreen: vmFinished")
+                        Log.d(TAG, "vmFinished")
                         _viewModel.startNextScreen(!it)
                     }
                 }

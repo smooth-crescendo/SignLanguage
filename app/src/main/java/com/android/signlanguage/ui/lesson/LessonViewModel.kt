@@ -11,6 +11,9 @@ import com.android.signlanguage.ui.lesson.exercises.letter_sign.LetterSignExerci
 import com.android.signlanguage.ui.lesson.exercises.sign_letter.SignLetterExerciseFragment
 import com.android.signlanguage.ui.lesson.lesson_finished.LessonFinishedFragment
 import com.android.signlanguage.ui.lesson.new_sign.NewSignFragment
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 
 class LessonViewModel(
@@ -46,14 +49,12 @@ class LessonViewModel(
     private val _doneExercisesSuccessfully = MutableLiveData(0)
 
     val progress: LiveData<Int> = Transformations.map(_doneExercisesSuccessfully) {
-        (_doneExercisesSuccessfully.value!!.toDouble() / EXERCISES_IN_LESSON.toDouble() * 100.0).toInt()
+        (it.toDouble() / EXERCISES_IN_LESSON.toDouble() * 100.0).toInt()
     }
 
     private val _userSkill = UserSkill.requireInstance()
 
     init {
-        Log.d(TAG, "init: ")
-
         startNextScreen()
     }
 
@@ -72,8 +73,6 @@ class LessonViewModel(
                 _doneExercisesSuccessfully.value = _doneExercisesSuccessfully.value!! + 1
                 _userSkill.upgrade((_currentScreen.value as Exercise).sign)
             }
-
-            Log.d(TAG, "startNextScreen: Skill: $_userSkill")
         }
 
         if (prevExerciseFailed) {
