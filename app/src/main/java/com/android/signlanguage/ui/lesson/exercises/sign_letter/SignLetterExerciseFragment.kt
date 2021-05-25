@@ -71,17 +71,33 @@ class SignLetterExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
                     )
             }
 
-            for ((index, button) in buttons.withIndex()) {
-                if (index == ra) {
-                    if (ra != a) {
-                        GlobalScope.launch(Dispatchers.Main) {
+            GlobalScope.launch(Dispatchers.Main) {
+
+                for ((index, button) in buttons.withIndex()) {
+                    if (index == a) {
+                        button.backgroundTintList =
+                            ColorStateList.valueOf(
+                                ResourcesCompat.getColor(
+                                    resources,
+                                    R.color.light_blue,
+                                    null
+                                )
+                            )
+                    }
+                }
+
+                delay(500)
+
+                for ((index, button) in buttons.withIndex()) {
+                    if (index == ra) {
+                        if (ra != a) {
                             delay(500)
                             markAs(true, button)
-                        }
-                    } else
-                        markAs(true, button)
-                } else if (index == a) {
-                    markAs(false, button)
+                        } else
+                            markAs(true, button)
+                    } else if (index == a) {
+                        markAs(false, button)
+                    }
                 }
             }
         }

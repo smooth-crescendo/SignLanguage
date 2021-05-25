@@ -68,17 +68,31 @@ class LetterSignExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
                     )
             }
 
-            for ((index, button) in buttons.withIndex()) {
-                if (index == ra) {
-                    if (ra != a) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            delay( 500)
+            GlobalScope.launch(Dispatchers.Main) {
+
+                for ((index, button) in buttons.withIndex()) {
+                    if (index == a) {
+                        button.background =
+                            ResourcesCompat.getDrawable(
+                                resources,
+                                R.drawable.answer_button_selected,
+                                null
+                            )
+                    }
+                }
+
+                delay(500)
+
+                for ((index, button) in buttons.withIndex()) {
+                    if (index == ra) {
+                        if (ra != a) {
+                            delay(500)
                             markAs(true, button)
-                        }
-                    } else
-                        markAs(true, button)
-                } else if (index == a) {
-                    markAs(false, button)
+                        } else
+                            markAs(true, button)
+                    } else if (index == a) {
+                        markAs(false, button)
+                    }
                 }
             }
         }

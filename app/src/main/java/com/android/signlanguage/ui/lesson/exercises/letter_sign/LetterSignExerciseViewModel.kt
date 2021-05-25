@@ -56,7 +56,7 @@ class LetterSignExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
             isAnswerBlocked = true
             showAnswerResults?.invoke(_rightAnswerIndex, signIndex)
             GlobalScope.launch {
-                delay(if (signIndex == _rightAnswerIndex) 750 else 1250)
+                delay(if (signIndex == _rightAnswerIndex) 1250 else 1750)
                 _finished.postValue(signIndex == _rightAnswerIndex)
             }
         }
