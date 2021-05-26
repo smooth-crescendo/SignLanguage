@@ -13,7 +13,7 @@
             android:gravity="start">
             <shape>
                 <corners android:radius="14dp"/>
-                <solid android:color="@color/light_blue"/>
+                <solid android:color="?attr/colorPrimary"/>
             </shape>
         </clip>
     </item>

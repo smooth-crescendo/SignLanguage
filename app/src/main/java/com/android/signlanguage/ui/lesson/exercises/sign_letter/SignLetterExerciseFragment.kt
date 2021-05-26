@@ -79,7 +79,7 @@ class SignLetterExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
                             ColorStateList.valueOf(
                                 ResourcesCompat.getColor(
                                     resources,
-                                    R.color.light_blue,
+                                    R.color.purple,
                                     null
                                 )
                             )
