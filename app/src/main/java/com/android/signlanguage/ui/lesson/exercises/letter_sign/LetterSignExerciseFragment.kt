@@ -63,7 +63,7 @@ class LetterSignExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
                 button.background =
                     ResourcesCompat.getDrawable(
                         resources,
-                        if (rightAnswer) R.drawable.answer_button_right else R.drawable.answer_button_wrong,
+                        if (rightAnswer) R.drawable.button_green else R.drawable.button_red,
                         null
                     )
             }
@@ -75,7 +75,7 @@ class LetterSignExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
                         button.background =
                             ResourcesCompat.getDrawable(
                                 resources,
-                                R.drawable.answer_button_selected,
+                                R.drawable.button_primary,
                                 null
                             )
                     }

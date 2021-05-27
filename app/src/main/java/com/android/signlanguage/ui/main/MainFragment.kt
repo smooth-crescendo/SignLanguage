@@ -46,7 +46,7 @@ class MainFragment : Fragment() {
 
         _viewModel.progressReset = {
             UserSkill.save(requireContext())
-            Toast.makeText(context, "Progress has been reset", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, getString(R.string.progress_reset_message), Toast.LENGTH_SHORT).show()
         }
 
         return binding.root

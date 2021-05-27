@@ -57,7 +57,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            android:background="@drawable/answer_button"
+            android:background="@drawable/button_gray"
             android:onClick="@{() -> viewModel.finish()}"
             android:text="@string/continue_button"
             app:layout_constraintBottom_toBottomOf="parent"

@@ -9,4 +9,8 @@
     <string name="lesson_exit_confirmation">Are you sure you want to exit the lesson? All propress will be lost.</string>
     <string name="cancel">Cancel</string>
     <string name="exit">Exit</string>
+    <string name="start_lesson_button">Start lesson</string>
+    <string name="english_sign_language">English Sign Language</string>
+    <string name="reset_progress_button">Reset progress</string>
+    <string name="progress_reset_message">Progress has been reset</string>
 </resources>
