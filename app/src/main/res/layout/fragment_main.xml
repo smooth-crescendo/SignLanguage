@@ -67,9 +67,8 @@
                 android:layout_height="8dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="40dp"
-                android:max="@{viewModel.pointsForNextLevel}"
-                android:progress="@{viewModel.points}"
-                tools:max="100"
+                android:max="100"
+                android:progress="@{viewModel.progressBarPoints}"
                 tools:progress="71"
                 android:progressDrawable="@drawable/lesson_progress_bar" />
 

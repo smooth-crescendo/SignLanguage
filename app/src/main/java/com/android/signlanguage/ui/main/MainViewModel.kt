@@ -22,6 +22,14 @@ class MainViewModel(val userSkill: UserSkill) : ViewModel() {
         " / $it"
     }
 
+    val progressBarPoints: LiveData<Int> = Transformations.map(points) {
+        val closestMilestoneIndex = PointsMilestones.getClosestIndex(it)!!
+        val closestMilestone = PointsMilestones.milestones[closestMilestoneIndex]
+        val previousMilestone =
+            if (closestMilestoneIndex - 1 >= 0) PointsMilestones.milestones[closestMilestoneIndex - 1] else 0
+        ((it - previousMilestone).toDouble() / (closestMilestone - previousMilestone).toDouble() * 100).toInt()
+    }
+
     val level: LiveData<Int> = Transformations.map(points) {
         PointsMilestones.getClosestIndex(it)!! + 1
     }
