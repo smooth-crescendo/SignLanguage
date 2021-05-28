@@ -5,10 +5,8 @@ import android.view.View
 import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener
 import com.android.signlanguage.model.Language
-import com.android.signlanguage.ui.lesson.LessonFragment
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
-import kotlin.random.Random
 
 class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
     FinishedListener {
@@ -25,6 +23,8 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
     private val _rightAnswer = MutableLiveData<Char>()
     val rightAnswer = Transformations.map(_rightAnswer) { it.toString() }
 
+    var wrongPrediction: (() -> Unit)? = null
+
     init {
         _rightAnswer.value = sign
     }
@@ -39,13 +39,18 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
         if (it) View.VISIBLE else View.GONE
     }
 
-    private val _continuousSignDetector = ContinuousSignDetector(20, 0.8, 750L)
+    private val _continuousSignDetector =
+        ContinuousSignDetector(20, 0.80, 750L)
 
     init {
-        _continuousSignDetector.rightSignDetected = {
+        _continuousSignDetector.signDetected = {
             if (finished.value == null) {
-                viewModelScope.launch {
-                    _finished.value = true
+                if (it == _rightAnswer.value) {
+                    viewModelScope.launch {
+                        _finished.value = true
+                    }
+                } else {
+                    wrongPrediction?.invoke()
                 }
             }
         }
@@ -61,13 +66,16 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
                 predictedSignIndex = j
         }
 
-        val predictedSign = 'A' + predictedSignIndex
-        _continuousSignDetector.addPrediction(
-            predictedSign == _rightAnswer.value,
-            System.currentTimeMillis()
-        )
+        if (output[0][predictedSignIndex] >= 0.80) {
 
-        Log.d(TAG, "handsCallback: $predictedSign")
+            val predictedSign = 'A' + predictedSignIndex
+            _continuousSignDetector.addPrediction(
+                predictedSign,
+                System.currentTimeMillis()
+            )
+
+            Log.d(TAG, "handsCallback: $predictedSign")
+        }
     }
 }
 

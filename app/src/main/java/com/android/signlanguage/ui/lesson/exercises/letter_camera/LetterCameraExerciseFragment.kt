@@ -1,21 +1,27 @@
 package com.android.signlanguage.ui.lesson.exercises.letter_camera
 
-import androidx.lifecycle.ViewModelProvider
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.android.signlanguage.ViewModelInitListener
+import com.android.signlanguage.databinding.FragmentLetterCameraExerciseBinding
 import com.android.signlanguage.model.ml.HandTrackingModel
 import com.android.signlanguage.model.ml.SignDetectionModelLoader
-import com.android.signlanguage.databinding.FragmentLetterCameraExerciseBinding
-import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.ui.lesson.Exercise
 import com.android.signlanguage.ui.lesson.ExerciseRules
 import com.google.mediapipe.components.PermissionHelper
 import com.google.mediapipe.framework.AndroidAssetUtil
+
 
 class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
 
@@ -77,6 +83,16 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
         _viewModel.isCameraAccessible.observe(viewLifecycleOwner) {
             if (it)
                 _viewModel.isLoading.value = true
+        }
+
+        _viewModel.wrongPrediction = {
+            val v = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(150, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                //deprecated in API 26
+                v.vibrate(150)
+            }
         }
 
         _handTrackingModel!!.isCameraLoaded.observe(viewLifecycleOwner) {
