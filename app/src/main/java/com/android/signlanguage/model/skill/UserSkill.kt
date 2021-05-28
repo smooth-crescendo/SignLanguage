@@ -70,7 +70,7 @@ class UserSkill {
         get() = _unlockedSigns.size
 
     fun unlockSign(sign: Char, step: Int = 0) {
-        if (!_unlockedSigns.contains(sign))
+        if (_unlockedSigns.find { it.sign == sign} == null)
             _unlockedSigns += SignSkill(sign)
     }
 
