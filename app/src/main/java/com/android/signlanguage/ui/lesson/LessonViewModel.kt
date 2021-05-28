@@ -1,6 +1,5 @@
 package com.android.signlanguage.ui.lesson
 
-import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import com.android.signlanguage.FinishedListener
@@ -11,9 +10,6 @@ import com.android.signlanguage.ui.lesson.exercises.letter_sign.LetterSignExerci
 import com.android.signlanguage.ui.lesson.exercises.sign_letter.SignLetterExerciseFragment
 import com.android.signlanguage.ui.lesson.lesson_finished.LessonFinishedFragment
 import com.android.signlanguage.ui.lesson.new_sign.NewSignFragment
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.util.*
 
 class LessonViewModel(

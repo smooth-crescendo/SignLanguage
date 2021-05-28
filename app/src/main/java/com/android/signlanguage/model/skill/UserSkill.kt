@@ -69,12 +69,27 @@ class UserSkill {
     val unlockedSignsCount
         get() = _unlockedSigns.size
 
-    fun unlockSign(sign: Char, step: Int = 0) {
-        if (_unlockedSigns.find { it.sign == sign} == null)
+    private var _points = 0
+    val points
+        get() = _points
+
+    val pointsForNextLevel: Int
+        get() {
+            return PointsMilestones.milestones[PointsMilestones.getClosestIndex(points)!!]
+        }
+
+    fun cutPoints() {
+        if (_points > PointsMilestones.max)
+            _points = PointsMilestones.max
+    }
+
+    fun unlockSign(sign: Char) {
+        if (_unlockedSigns.find { it.sign == sign } == null)
             _unlockedSigns += SignSkill(sign)
     }
 
     fun reset() {
+        _points = 0
         _unlockedSigns.clear()
     }
 
@@ -113,8 +128,16 @@ class UserSkill {
 
     fun upgrade(sign: Char) {
         _unlockedSigns.find { it.sign == sign }?.let {
-            it.step++
+            it.increment()
         }
+
+        _points += Random.nextInt(75, 125)
+        cutPoints()
+    }
+
+    fun addPointsForEndedLesson() {
+        _points += 250
+        cutPoints()
     }
 
     override fun toString(): String {

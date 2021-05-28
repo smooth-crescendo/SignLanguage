@@ -3,6 +3,7 @@ package com.android.signlanguage.ui.lesson
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -57,8 +58,10 @@ class LessonFragment : Fragment() {
 
         _viewModel.finished.observe(viewLifecycleOwner) {
             if (it != null) {
-                if (it == true)
+                if (it == true) {
+                    UserSkill.requireInstance().addPointsForEndedLesson()
                     UserSkill.save(requireContext())
+                }
                 findNavController().navigateUp()
             }
         }

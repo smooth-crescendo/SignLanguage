@@ -53,20 +53,24 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    tools:text = "2"
                     android:fontFamily="@font/montserrat_black"
-                    android:text="2"
+                    android:text="@{viewModel.levelString}"
                     android:textColor="@color/black100"
                     android:textSize="20sp" />
             </FrameLayout>
 
             <ProgressBar
+                android:id="@+id/points_progress_bar"
                 style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:layout_width="280dp"
                 android:layout_height="8dp"
                 android:layout_gravity="center"
                 android:layout_marginTop="40dp"
-                android:max="100"
-                android:progress="71"
+                android:max="@{viewModel.pointsForNextLevel}"
+                android:progress="@{viewModel.points}"
+                tools:max="100"
+                tools:progress="71"
                 android:progressDrawable="@drawable/lesson_progress_bar" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -79,7 +83,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat_black"
-                    android:text="5,729"
+                    tools:text="5,729"
+                    android:text="@{viewModel.pointsString}"
                     android:textSize="32sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -92,7 +97,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="6dp"
                     android:fontFamily="@font/montserrat_black"
-                    android:text=" / 8,000"
+                    tools:text=" / 8,000"
+                    android:text="@{viewModel.pointsForNextLevelString}"
                     android:textColor="@color/black300"
                     android:textSize="16sp"
                     app:layout_constraintBottom_toBottomOf="parent"
