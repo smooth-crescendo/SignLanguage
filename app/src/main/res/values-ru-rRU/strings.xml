@@ -13,4 +13,5 @@
     <string name="english_sign_language">Английский Язык Жестов</string>
     <string name="reset_progress_button">Сбросить прогресс</string>
     <string name="progress_reset_message">Прогресс был сброшен</string>
+    <string name="showing_sign_message">Вы показываете %c</string>
 </resources>

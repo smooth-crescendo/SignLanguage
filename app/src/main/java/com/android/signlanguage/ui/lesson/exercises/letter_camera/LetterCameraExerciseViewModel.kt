@@ -23,7 +23,7 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
     private val _rightAnswer = MutableLiveData<Char>()
     val rightAnswer = Transformations.map(_rightAnswer) { it.toString() }
 
-    var wrongPrediction: (() -> Unit)? = null
+    var wrongPrediction: ((prediction: Char) -> Unit)? = null
 
     init {
         _rightAnswer.value = sign
@@ -50,7 +50,7 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
                         _finished.value = true
                     }
                 } else {
-                    wrongPrediction?.invoke()
+                    wrongPrediction?.invoke(it)
                 }
             }
         }

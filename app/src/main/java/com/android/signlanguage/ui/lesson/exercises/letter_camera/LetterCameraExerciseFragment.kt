@@ -1,5 +1,8 @@
 package com.android.signlanguage.ui.lesson.exercises.letter_camera
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
@@ -9,10 +12,13 @@ import android.view.LayoutInflater
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat.getSystemService
+import android.view.animation.AccelerateInterpolator
+import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.android.signlanguage.R
 import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.databinding.FragmentLetterCameraExerciseBinding
 import com.android.signlanguage.model.ml.HandTrackingModel
@@ -21,6 +27,7 @@ import com.android.signlanguage.ui.lesson.Exercise
 import com.android.signlanguage.ui.lesson.ExerciseRules
 import com.google.mediapipe.components.PermissionHelper
 import com.google.mediapipe.framework.AndroidAssetUtil
+import kotlinx.coroutines.*
 
 
 class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
@@ -47,6 +54,11 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
     private lateinit var _previewDisplayView: SurfaceView
     private var _handTrackingModel: HandTrackingModel? = null
 
+    private lateinit var _binding: FragmentLetterCameraExerciseBinding
+
+    var hideWrongSignMessageAnimator: ValueAnimator? = null
+    var extendWrongSignTextAnimator: ValueAnimator? = null
+
     override val sign: Char
         get() = requireArguments().getChar(SIGN_BUNDLE)
 
@@ -59,7 +71,7 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val binding = FragmentLetterCameraExerciseBinding.inflate(inflater, container, false)
+        _binding = FragmentLetterCameraExerciseBinding.inflate(inflater, container, false)
 
         val factory = LetterCameraExerciseViewModelFactory(sign)
         _viewModel = ViewModelProvider(this, factory).get(LetterCameraExerciseViewModel::class.java)
@@ -67,12 +79,12 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
             SignDetectionModelLoader().load(requireActivity().assets, "model.tflite")
         viewModelInitialized?.invoke(_viewModel)
 
-        binding.lifecycleOwner = this
-        binding.viewModel = _viewModel
+        _binding.lifecycleOwner = this
+        _binding.viewModel = _viewModel
 
         _previewDisplayView = SurfaceView(context)
         _previewDisplayView.alpha = 1f
-        binding.viewGroup.addView(_previewDisplayView, 0)
+        _binding.viewGroup.addView(_previewDisplayView, 0)
         _handTrackingModel!!.setupPreviewDisplayView(_previewDisplayView)
         AndroidAssetUtil.initializeNativeAssetManager(context)
         _handTrackingModel!!.initializeProcessor(context)
@@ -93,6 +105,9 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
                 //deprecated in API 26
                 v.vibrate(150)
             }
+            MainScope().launch {
+                showWrongSignMessage(it)
+            }
         }
 
         _handTrackingModel!!.isCameraLoaded.observe(viewLifecycleOwner) {
@@ -105,7 +120,7 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
         else
             requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 1)
 
-        return binding.root
+        return _binding.root
     }
 
     override fun onResume() {
@@ -129,6 +144,84 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
     override fun onDestroyView() {
         super.onDestroyView()
         _viewModel.signDetectionModel.close()
+    }
+
+    private fun showWrongSignMessage(sign: Char) {
+        _binding.wrongSignImage.clearAnimation()
+        _binding.wrongSignTextView.clearAnimation()
+        hideWrongSignMessageAnimator?.cancel()
+        extendWrongSignTextAnimator?.cancel()
+        hideWrongSignMessage(0) {
+
+            _binding.wrongSignImage.apply {
+                alpha = 0f
+                visibility = View.VISIBLE
+
+                animate()
+                    .alpha(1f)
+                    .setDuration(150)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator?) {
+                            super.onAnimationEnd(animation)
+                            showWrongSignText(sign, 250) {
+                                hideWrongSignMessage(2500, null)
+                            }
+                        }
+                    })
+            }
+        }
+    }
+
+    private fun hideWrongSignMessage(startDelay: Long, endCallback: (() -> ImageView)?) {
+        hideWrongSignMessageAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
+            interpolator = AccelerateInterpolator()
+            duration = 150
+            setStartDelay(startDelay)
+            addUpdateListener {
+                _binding.wrongSignImage.alpha = animatedValue as Float
+                _binding.wrongSignTextView.alpha = animatedValue as Float
+            }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    _binding.wrongSignImage.visibility = View.GONE
+                    _binding.wrongSignTextView.visibility = View.GONE
+                    endCallback?.invoke()
+                }
+            })
+        }
+        hideWrongSignMessageAnimator!!.start()
+    }
+
+    private fun showWrongSignText(sign: Char, startDelay: Long, endCallback: () -> Unit) {
+        val view = _binding.wrongSignTextView
+        view.text = getString(R.string.showing_sign_message, sign)
+        view.measure(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val targetWidth = view.measuredWidth
+
+        view.apply {
+            layoutParams.width = 0
+            alpha = 1f
+            visibility = View.VISIBLE
+        }
+
+        extendWrongSignTextAnimator = ValueAnimator.ofInt(0, targetWidth).apply {
+            interpolator = AccelerateInterpolator()
+            duration = 300
+            setStartDelay(startDelay)
+            addUpdateListener {
+                val layoutParams = view.layoutParams
+                layoutParams.width = (targetWidth * animatedFraction).toInt()
+                view.layoutParams = layoutParams
+            }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    val layoutParams = view.layoutParams
+                    layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
+                    endCallback.invoke()
+                }
+            })
+        }
+        extendWrongSignTextAnimator!!.start()
     }
 
     override fun onRequestPermissionsResult(
