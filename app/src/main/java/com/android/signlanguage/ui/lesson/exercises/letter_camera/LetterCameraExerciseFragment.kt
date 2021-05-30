@@ -174,7 +174,7 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
                             super.onAnimationEnd(animation)
                             showRightSignText(250) {
                                 MainScope().launch {
-                                    delay(1000)
+                                    delay(750)
                                     _viewModel.finish()
                                 }
                             }
