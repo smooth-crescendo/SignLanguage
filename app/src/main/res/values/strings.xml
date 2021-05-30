@@ -15,4 +15,5 @@
     <string name="progress_reset_message">Progress has been reset</string>
     <string name="showing_sign_message">You are showing %c</string>
     <string name="right_sign_message">Perfect!</string>
+    <string name="signs">Signs</string>
 </resources>

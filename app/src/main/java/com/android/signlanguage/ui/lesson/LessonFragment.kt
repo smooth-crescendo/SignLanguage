@@ -1,9 +1,9 @@
 package com.android.signlanguage.ui.lesson
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -12,6 +12,7 @@ import com.android.signlanguage.R
 import com.android.signlanguage.ViewModelInitListener
 import com.android.signlanguage.databinding.FragmentLessonBinding
 import com.android.signlanguage.model.skill.UserSkill
+import com.android.signlanguage.ui.detailed_signs.DetailedSignsActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,6 +40,11 @@ class LessonFragment : Fragment() {
 
         _binding.lifecycleOwner = this
         _binding.viewModel = _viewModel
+
+        _viewModel.openHelpWindowPrompted = {
+            val intent = Intent(context, DetailedSignsActivity::class.java)
+            startActivity(intent)
+        }
 
         _viewModel.exitPrompted = {
             MaterialAlertDialogBuilder(requireContext())

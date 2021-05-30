@@ -15,4 +15,5 @@
     <string name="progress_reset_message">Прогресс был сброшен</string>
     <string name="showing_sign_message">Вы показываете %c</string>
     <string name="right_sign_message">Отлично!</string>
+    <string name="signs">Жесты</string>
 </resources>

@@ -7,7 +7,7 @@ object Language {
     val maxLetters
         get() = drawables.size
 
-    private val drawables = arrayListOf(
+    val drawables = arrayListOf(
         R.drawable.letter_a,
         R.drawable.letter_b,
         R.drawable.letter_c,
@@ -20,6 +20,21 @@ object Language {
         R.drawable.letter_j,
         R.drawable.letter_k,
         R.drawable.letter_l,
+    )
+
+    val detailedDrawables = arrayListOf(
+        R.drawable.a,
+        R.drawable.b,
+        R.drawable.c,
+        R.drawable.d,
+        R.drawable.e,
+        R.drawable.f,
+        R.drawable.g,
+        R.drawable.h,
+        R.drawable.i,
+        R.drawable.j,
+        R.drawable.k,
+        R.drawable.l,
     )
 
     fun getLetter(index: Int): Char  {

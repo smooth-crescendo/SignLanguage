@@ -45,6 +45,7 @@ class LessonViewModel(
     private val _doneExercisesSuccessfully = MutableLiveData(0)
 
     var exitPrompted: (() -> Unit)? = null
+    var openHelpWindowPrompted: (() -> Unit)? = null
 
     val progress: LiveData<Int> = Transformations.map(_doneExercisesSuccessfully) {
         (it.toDouble() / EXERCISES_IN_LESSON.toDouble() * 100.0).toInt()
@@ -57,7 +58,7 @@ class LessonViewModel(
     }
 
     fun openHelpWindow() {
-
+        openHelpWindowPrompted?.invoke()
     }
 
     fun promptExit() {
