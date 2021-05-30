@@ -6,13 +6,13 @@
     <data>
         <variable
             name="viewModel"
-            type="com.android.signlanguage.ui.ModelTrainingDataFormationViewModel" />
+            type="com.android.signlanguage.ui.model_training_data_formation.ModelTrainingDataFormationViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.ModelTrainingDataFormationFragment">
+        tools:context=".ui.model_training_data_formation.ModelTrainingDataFormationFragment">
 
         <SurfaceView
             android:id="@+id/surface_view"

@@ -1,4 +1,4 @@
-package com.android.signlanguage.ui
+package com.android.signlanguage.ui.model_training_data_formation
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations

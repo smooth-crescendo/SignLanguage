@@ -23,6 +23,6 @@
     </fragment>
     <fragment
         android:id="@+id/modelTestDataFormationFragment"
-        android:name="com.android.signlanguage.ui.ModelTrainingDataFormationFragment"
+        android:name="com.android.signlanguage.ui.model_training_data_formation.ModelTrainingDataFormationFragment"
         android:label="ModelTestDataFormationFragment" />
 </navigation>
