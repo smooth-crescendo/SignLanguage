@@ -97,14 +97,14 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
                 _viewModel.isLoading.value = true
         }
 
-        _viewModel.wrongPrediction = {
-            val v = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                v.vibrate(VibrationEffect.createOneShot(150, VibrationEffect.DEFAULT_AMPLITUDE))
-            } else {
-                //deprecated in API 26
-                v.vibrate(150)
+        _viewModel.rightPrediction = {
+            MainScope().launch {
+                showRightSignMessage()
             }
+        }
+
+        _viewModel.wrongPrediction = {
+            vibrate(150)
             MainScope().launch {
                 showWrongSignMessage(it)
             }
@@ -144,6 +144,44 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
     override fun onDestroyView() {
         super.onDestroyView()
         _viewModel.signDetectionModel.close()
+    }
+
+    private fun vibrate(ms: Long) {
+        val v = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE))
+        } else {
+            //deprecated in API 26
+            v.vibrate(ms)
+        }
+    }
+
+    private fun showRightSignMessage() {
+        _binding.wrongSignImage.clearAnimation()
+        _binding.wrongSignTextView.clearAnimation()
+        hideWrongSignMessageAnimator?.cancel()
+        extendWrongSignTextAnimator?.cancel()
+        hideWrongSignMessage(0) {
+            _binding.rightSignImage.apply {
+                alpha = 0f
+                visibility = View.VISIBLE
+
+                animate()
+                    .alpha(1f)
+                    .setDuration(150)
+                    .setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator?) {
+                            super.onAnimationEnd(animation)
+                            showRightSignText(250) {
+                                MainScope().launch {
+                                    delay(1000)
+                                    _viewModel.finish()
+                                }
+                            }
+                        }
+                    })
+            }
+        }
     }
 
     private fun showWrongSignMessage(sign: Char) {
@@ -222,6 +260,37 @@ class LetterCameraExerciseFragment : Fragment(), ViewModelInitListener, Exercise
             })
         }
         extendWrongSignTextAnimator!!.start()
+    }
+
+    private fun showRightSignText(startDelay: Long, endCallback: () -> Unit) {
+        val view = _binding.rightSignTextView
+        view.measure(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val targetWidth = view.measuredWidth
+
+        view.apply {
+            layoutParams.width = 0
+            alpha = 1f
+            visibility = View.VISIBLE
+        }
+
+        val extendRightSignTextAnimator = ValueAnimator.ofInt(0, targetWidth).apply {
+            interpolator = AccelerateInterpolator()
+            duration = 300
+            setStartDelay(startDelay)
+            addUpdateListener {
+                val layoutParams = view.layoutParams
+                layoutParams.width = (targetWidth * animatedFraction).toInt()
+                view.layoutParams = layoutParams
+            }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    val layoutParams = view.layoutParams
+                    layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
+                    endCallback.invoke()
+                }
+            })
+        }
+        extendRightSignTextAnimator!!.start()
     }
 
     override fun onRequestPermissionsResult(

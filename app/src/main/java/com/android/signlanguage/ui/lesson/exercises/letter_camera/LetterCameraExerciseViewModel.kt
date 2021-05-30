@@ -24,6 +24,9 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
     val rightAnswer = Transformations.map(_rightAnswer) { it.toString() }
 
     var wrongPrediction: ((prediction: Char) -> Unit)? = null
+    var rightPrediction: (() -> Unit)? = null
+
+    var rightSignDetected = false
 
     init {
         _rightAnswer.value = sign
@@ -46,9 +49,8 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
         _continuousSignDetector.signDetected = {
             if (finished.value == null) {
                 if (it == _rightAnswer.value) {
-                    viewModelScope.launch {
-                        _finished.value = true
-                    }
+                    rightSignDetected = true
+                    rightPrediction?.invoke()
                 } else {
                     wrongPrediction?.invoke(it)
                 }
@@ -57,6 +59,9 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
     }
 
     fun handsCallback(input: Array<Array<FloatArray>>) {
+        if (rightSignDetected)
+            return
+
         val output = Array(1) { FloatArray(Language.maxLetters) }
         signDetectionModel.run(input, output)
 
@@ -76,6 +81,10 @@ class LetterCameraExerciseViewModel(sign: Char) : ViewModel(),
 
             Log.d(TAG, "handsCallback: $predictedSign")
         }
+    }
+
+    fun finish() {
+        _finished.value = true
     }
 }
 
