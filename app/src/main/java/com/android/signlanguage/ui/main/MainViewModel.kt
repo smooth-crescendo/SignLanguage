@@ -4,11 +4,11 @@ import androidx.lifecycle.*
 import com.android.signlanguage.model.skill.PointsMilestones
 import com.android.signlanguage.model.skill.UserSkill
 
-class MainViewModel(val userSkill: UserSkill) : ViewModel() {
+class MainViewModel(private var _userSkill: UserSkill) : ViewModel() {
     var lessonStarted: (() -> Unit)? = null
     var progressReset: (() -> Unit)? = null
 
-    private val _points = MutableLiveData(userSkill.points)
+    private val _points = MutableLiveData(_userSkill.points)
     val points: LiveData<Int> = _points
 
     val pointsString: LiveData<String> = Transformations.map(points) {
@@ -42,13 +42,14 @@ class MainViewModel(val userSkill: UserSkill) : ViewModel() {
     }
 
     fun resetProgress() {
-        userSkill.reset()
-        _points.value = userSkill.points
+        _userSkill.reset()
+        _points.value = _userSkill.points
         progressReset?.invoke()
     }
 
     fun update() {
-        _points.value = userSkill.points
+        _userSkill = UserSkill.requireInstance()
+        _points.value = _userSkill.points
     }
 }
 

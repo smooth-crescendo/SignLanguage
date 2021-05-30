@@ -50,6 +50,10 @@ class UserSkill {
             }
         }
 
+        fun useSavedVersion(context: Context) {
+            instance = read(context)
+        }
+
         fun save(context: Context) {
             val file = File(context.filesDir, FILENAME)
             if (!file.exists()) {

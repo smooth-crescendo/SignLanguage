@@ -49,6 +49,7 @@ class MainFragment : Fragment() {
             Toast.makeText(context, getString(R.string.progress_reset_message), Toast.LENGTH_SHORT).show()
         }
 
+        UserSkill.useSavedVersion(requireContext())
         _viewModel.update()
 
         return binding.root
