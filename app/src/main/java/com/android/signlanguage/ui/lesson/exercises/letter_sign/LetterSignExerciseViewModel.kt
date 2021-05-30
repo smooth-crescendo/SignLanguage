@@ -50,19 +50,19 @@ class LetterSignExerciseViewModel(sign: Char) : ViewModel(), FinishedListener {
 
     var isAnswerBlocked = false
 
+    var showAnswerResults: ((rightAnswer: Int, answer: Int) -> Unit)? = null
+
     fun answer(signIndex: Int) {
         Log.d(TAG, "answer: ")
         if (!isAnswerBlocked) {
             isAnswerBlocked = true
             showAnswerResults?.invoke(_rightAnswerIndex, signIndex)
-            GlobalScope.launch {
-                delay(if (signIndex == _rightAnswerIndex) 1250 else 1750)
-                _finished.postValue(signIndex == _rightAnswerIndex)
-            }
         }
     }
 
-    var showAnswerResults: ((rightAnswer: Int, answer: Int) -> Unit)? = null
+    fun finish(rightAnswer: Boolean) {
+        _finished.value = rightAnswer
+    }
 }
 
 class LetterSignExerciseViewModelFactory(val sign: Char) : ViewModelProvider.Factory {

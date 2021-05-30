@@ -94,6 +94,10 @@ class LetterSignExerciseFragment : Fragment(), ViewModelInitListener, Exercise {
                         markAs(false, button)
                     }
                 }
+
+                delay(750)
+
+                _viewModel.finish(ra == a)
             }
         }
 
